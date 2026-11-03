@@ -203,9 +203,15 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 .range-card .rc-text p { font-size: 13px; line-height: 1.45; font-weight: 600; margin: 0; }
 .range-card .why { font-size: 13px; line-height: 1.45; color: var(--muted); }
 .range-card .status { margin-top: auto; padding-top: 6px; font-size: 12px; font-weight: 500; }
-.rc-chip { padding: 14px 16px; display: flex; flex-direction: column; gap: 1px; font-size: 12px; line-height: 1.5; color: var(--ink); }
+.rc-chip { padding: 16px 16px; min-height: 64px; display: flex; flex-direction: column; gap: 1px; font-size: 12px; line-height: 1.5; color: var(--ink); }
 .rc-chip.dark { color: #fff; }
-.rc-chip .n { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+.rc-chip .n { font-weight: 600; font-size: 13px; }
+.rc-chip .v { display: flex; flex-direction: column; max-height: 0; overflow: hidden; opacity: 0; transition: max-height .35s ease, opacity .25s ease, margin .35s ease; }
+.range-grid.open .rc-chip .v { max-height: 80px; opacity: 1; margin-top: 4px; }
+.values-toggle { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 18px; padding: 8px 14px; border: 1px solid rgba(16, 35, 63, .2); border-radius: 40px; background: #fff; color: var(--ink); font: 500 13px var(--sans); cursor: pointer; }
+.values-toggle::after { content: "+"; font-size: 15px; line-height: 1; }
+.values-toggle[aria-expanded="true"]::after { content: "\2212"; }
+.values-toggle:hover { border-color: var(--navy); }
 .rc-chip .copyable { color: inherit; text-align: left; font-size: 12px; }
 
 /* ---------- do / don't ---------- */

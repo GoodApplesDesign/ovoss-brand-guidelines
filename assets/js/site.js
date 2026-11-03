@@ -36,6 +36,17 @@
     });
   });
 
+  // colour values: one toggle opens or folds every range card's values
+  document.querySelectorAll('[data-values-toggle]').forEach(function (b) {
+    var grid = b.nextElementSibling;
+    b.addEventListener('click', function () {
+      var open = !grid.classList.contains('open');
+      grid.classList.toggle('open', open);
+      b.setAttribute('aria-expanded', open ? 'true' : 'false');
+      b.textContent = open ? 'Hide colour values' : 'Show colour values';
+    });
+  });
+
   // tabs: show one panel at a time (e.g. gradient / flat colourways)
   document.querySelectorAll('[data-tabs]').forEach(function (box) {
     var tabs = box.querySelectorAll('[role="tab"]'), panels = box.querySelectorAll('[data-panel]');
