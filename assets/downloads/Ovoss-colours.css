@@ -1,0 +1,12 @@
+/* Ovoss colour tokens */
+:root {
+  --ovoss-deep-navy: #10233F;
+  --ovoss-slate-grey: #6F7D8A;
+  --ovoss-ice-blue: #DCEAF4;
+  --ovoss-soft-silver: #C6CDD5;
+  --ovoss-mist-white: #F7F9FB;
+  --ovoss-perio-green: #2E5D4F;
+  --ovoss-perio-mint: #D8E8DE;
+  --ovoss-daily-lavender: #D8DEF3;
+  --ovoss-restore-grey: #E4E6EA;
+}

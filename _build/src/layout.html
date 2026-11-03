@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{doc_title}}</title>
+<meta name="description" content="{{description}}">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" href="assets/img/o2-mark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body data-page="{{slug}}">
+<a class="skip" href="#main">Skip to content</a>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <a class="brand" href="index.html" aria-label="Ovoss brand guidelines home"><img src="assets/logo/svg/wordmark-navy.svg" alt="Ovoss" width="104" height="23"></a>
+  </div>
+  <nav class="nav" aria-label="Guidelines">
+    <a class="nav-root" href="index.html"{{home_current}}>Overview</a>
+    <ul class="nav-pages">
+{{nav}}
+    </ul>
+  </nav>
+  <div class="sidebar-foot">Brand guidelines<br>Version 1.0 &middot; November 2026</div>
+</aside>
+
+<div class="shell">
+  <header class="topbar">
+    <button class="menu-btn" aria-controls="sidebar" aria-expanded="false"><span></span><span></span><span class="sr">Menu</span></button>
+    <a class="topbar-mark" href="index.html" aria-label="Home"><img src="assets/logo/svg/wordmark-navy.svg" alt="" width="78" height="17"></a>
+    <span class="topbar-title muted">Brand guidelines</span>
+  </header>
+
+  <main id="main">
+    <header class="page-head">
+      <h1 class="page-title">{{title}}</h1>
+      <div class="page-intro">{{intro}}</div>
+    </header>
+{{content}}
+    <nav class="prevnext" aria-label="Pages">{{prevnext}}</nav>
+  </main>
+
+  <footer class="footer">
+    <img src="assets/logo/svg/wordmark-navy.svg" alt="" width="64" height="14">
+    <p>Ovoss brand guidelines. Ovoss is a brand of Cuross Health Pty Ltd.</p>
+    <p>Designed by Good Apples.</p>
+  </footer>
+</div>
+<script src="assets/js/site.js" defer></script>
+</body>
+</html>

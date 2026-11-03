@@ -1,0 +1,4 @@
+.DS_Store
+__pycache__/
+# PNG render cache (the PNGs ship inside the zips)
+_build/png/
