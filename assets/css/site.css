@@ -202,6 +202,9 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 .range-card .bottom p { font-size: 14px; margin: 0; }
 .range-card .bottom small { font-size: 12px; color: var(--muted); }
 .range-card .status { font-size: 12px; font-weight: 500; }
+.range-card .cv { display: flex; flex-direction: column; gap: 1px; font-size: 12px; line-height: 1.45; opacity: .85; }
+.range-card .cv span:first-child { font-weight: 500; }
+.range-card .cv .copyable { text-align: left; font-size: 12px; }
 .range-card .why { font-size: 13px; line-height: 1.45; color: var(--ink); opacity: .8; }
 
 /* ---------- do / don't ---------- */
