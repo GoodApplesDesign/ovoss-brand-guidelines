@@ -200,7 +200,7 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 .range-card { border-radius: var(--radius); overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); display: flex; flex-direction: column; background: #fff; }
 .range-card .rc-text { flex: 1; padding: 18px 16px 20px; display: flex; flex-direction: column; gap: 8px; }
 .range-card .rc-text b { font-weight: 600; text-transform: uppercase; letter-spacing: .12em; font-size: 13px; }
-.range-card .rc-text p { font-size: 15px; line-height: 1.45; margin: 0; }
+.range-card .rc-text p { font-size: 13px; line-height: 1.45; font-weight: 600; margin: 0; }
 .range-card .why { font-size: 13px; line-height: 1.45; color: var(--muted); }
 .range-card .status { margin-top: auto; padding-top: 6px; font-size: 12px; font-weight: 500; }
 .rc-chip { padding: 14px 16px; display: flex; flex-direction: column; gap: 1px; font-size: 12px; line-height: 1.5; color: var(--ink); }
