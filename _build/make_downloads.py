@@ -15,8 +15,8 @@ CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 CORE = [('Deep Navy', '#10233F', (97, 84, 46, 52)), ('Slate Grey', '#6F7D8A', (60, 44, 36, 6)), ('Ice Blue', '#DCEAF4', (12, 3, 1, 0)),
         ('Soft Silver', '#C6CDD5', (22, 14, 11, 0)), ('Mist White', '#F7F9FB', (2, 1, 0, 0))]
 RANGE = [('Perio Green', '#2E5D4F', (81, 43, 67, 31)), ('Perio Mint', '#D8E8DE', (15, 2, 13, 0)),
-         ('Daily Violet', '#574C8F', (78, 81, 13, 2)), ('Daily Lilac', '#E6E3F4', (8, 9, 0, 0)),
-         ('Restore Terracotta', '#A85A43', (26, 71, 76, 14)), ('Restore Blush', '#F5E5DE', (3, 10, 9, 0))]
+         ('Daily Violet', '#524677', (78, 81, 27, 11)), ('Daily Lilac', '#E4E1EE', (9, 9, 1, 0)),
+         ('Restore Teal', '#1F6B72', (86, 43, 48, 17)), ('Restore Aqua', '#DCEFEF', (13, 0, 5, 0))]
 PNG_WIDTH = {'wordmark': 2400, 'implant-care': 2400, 'brand-line': 2400, 'monogram': 2000}
 
 
