@@ -196,16 +196,15 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 .ratio-key span { min-width: 0; padding-right: 10px; box-sizing: border-box; }
 .ratio-key b { display: block; font-weight: 600; color: var(--ink); }
 
-/* range cards: what the range is, then its dark and light colour */
-.range-card { border-radius: var(--radius); overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); display: flex; flex-direction: column; background: #fff; }
-.range-card .rc-text { flex: 1; padding: 18px 16px 20px; display: flex; flex-direction: column; gap: 8px; }
-.range-card .rc-text b { font-weight: 600; text-transform: uppercase; letter-spacing: .12em; font-size: 13px; }
-.range-card .rc-text p { font-size: 15px; line-height: 1.45; margin: 0; }
-.range-card .why { font-size: 13px; line-height: 1.45; color: var(--muted); }
-.range-card .status { margin-top: auto; padding-top: 6px; font-size: 12px; font-weight: 500; }
+/* range cards: the colours, with the range named on the dark one; the words sit underneath */
+.range-card { border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
+.rc-status { font-size: 13px !important; font-weight: 500; color: var(--ink) !important; margin-top: 8px !important; }
+.rc-status.muted { color: var(--muted) !important; font-weight: 400; }
 .rc-chip { padding: 14px 16px; display: flex; flex-direction: column; gap: 1px; font-size: 12px; line-height: 1.5; color: var(--ink); }
 .rc-chip.dark { color: #fff; }
 .rc-chip .n { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+.rc-chip .rn { font-weight: 600; text-transform: uppercase; letter-spacing: .12em; font-size: 13px; margin-bottom: 26px; }
+.rc-chip.dark { padding-top: 18px; }
 .rc-chip .copyable { color: inherit; text-align: left; font-size: 12px; }
 
 /* ---------- do / don't ---------- */
