@@ -16,7 +16,7 @@ CORE = [('Deep Navy', '#10233F', (97, 84, 46, 52)), ('Slate Grey', '#6F7D8A', (6
         ('Soft Silver', '#C6CDD5', (22, 14, 11, 0)), ('Mist White', '#F7F9FB', (2, 1, 0, 0))]
 RANGE = [('Perio Green', '#2E5D4F', (81, 43, 67, 31)), ('Perio Mint', '#D8E8DE', (15, 2, 13, 0)),
          ('Daily Lavender', '#D8DEF3', (13, 9, 0, 0)), ('Restore Grey', '#E4E6EA', (9, 6, 4, 0))]
-PNG_WIDTH = {'wordmark': 2400, 'implant-care': 2400, 'brand-line': 2400}
+PNG_WIDTH = {'wordmark': 2400, 'implant-care': 2400, 'brand-line': 2400, 'monogram': 2000}
 
 
 def render_png(svg_path, out_path, width):

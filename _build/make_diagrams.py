@@ -5,7 +5,8 @@ Run:  python3 _build/make_diagrams.py   (after the logo SVGs exist in assets/log
 Clear space: X is the height of the O in OVOSS. Stacks of the logo's own O, at low opacity, show X at the
 top-left and bottom-right corners (turned 90 degrees on the sides), touching the logo and the boundary.
 """
-import math, os, re
+import math, os, re, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -30,13 +31,20 @@ def o_path(svg):
 def clearspace(name):
     svg = open(os.path.join(LOGOS, f'{name}-white.svg'), encoding='utf-8').read()
     (_, _, W, H), body = inner(svg)
-    ox, oy, ow, oh = O_BOX[name]
+    if name == 'monogram':  # the O is drawn from the wordmark's O, scaled into the ring
+        import make_monogram
+        s, _, _, ow, oh = make_monogram.geometry()
+        ox, oy = O_BOX['wordmark'][:2]
+        d = o_path(open(os.path.join(LOGOS, 'wordmark-white.svg'), encoding='utf-8').read())
+    else:
+        s = 1
+        ox, oy, ow, oh = O_BOX[name]
+        d = o_path(svg)
     X = oh
     pad = 0.75 * X
     vx, vy, vw, vh = -X - pad, -X - pad, W + 2 * (X + pad), H + 2 * (X + pad)
-    d = o_path(svg)
-    o = lambda x, y: f'<path d="{d}" transform="translate({x - ox:.3f},{y - oy:.3f})"/>'
-    o90 = lambda x, y: f'<path d="{d}" transform="translate({x + oh:.3f},{y:.3f}) rotate(90) translate({-ox:.3f},{-oy:.3f})"/>'
+    o = lambda x, y: f'<path d="{d}" transform="translate({x:.3f},{y:.3f}) scale({s:.5f}) translate({-ox:.3f},{-oy:.3f})"/>'
+    o90 = lambda x, y: f'<path d="{d}" transform="translate({x + oh:.3f},{y:.3f}) rotate(90) scale({s:.5f}) translate({-ox:.3f},{-oy:.3f})"/>'
     marks = ''.join([
         o(0, -X), o90(-X, 0),                      # top-left: above and beside the logo
         o(W - ow, H), o90(W, H - ow),              # bottom-right
@@ -64,7 +72,7 @@ def wave(width=171.0, height=30.0):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    for name in O_BOX:
+    for name in list(O_BOX) + ['monogram']:
         open(os.path.join(OUT, f'clearspace-{name}.svg'), 'w', encoding='utf-8').write(clearspace(name))
     open(os.path.join(OUT, 'wave.svg'), 'w', encoding='utf-8').write(wave())
     print('diagrams written to', OUT)
