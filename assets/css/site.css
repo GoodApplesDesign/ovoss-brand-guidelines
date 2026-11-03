@@ -40,7 +40,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.65 
 img, video, svg { max-width: 100%; }
 img, video { display: block; height: auto; }
 a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: .2em; }
-p { margin: 0 0 1em; }
+p { margin: 0 0 1em; text-wrap: pretty; }
 p:last-child { margin-bottom: 0; }
 strong { font-weight: 600; }
 ::selection { background: var(--ice); color: var(--navy); }
