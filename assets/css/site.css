@@ -190,8 +190,11 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 .copyable { background: none; border: 0; padding: 0; color: var(--ink); font: inherit; cursor: copy; text-align: right; }
 .copyable:hover { text-decoration: underline; }
 .copyable.copied::after { content: " copied"; color: var(--slate); }
-.ratio { display: flex; height: 120px; border-radius: var(--radius); overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); }
-.ratio > div { display: flex; align-items: flex-end; padding: 10px 12px; font-size: 13px; font-weight: 500; }
+.ratio { display: flex; height: 120px; border-radius: var(--radius); overflow: hidden; }
+.ratio > div { min-width: 0; }
+.ratio-key { display: flex; gap: 0; margin-top: 10px; font-size: 13px; color: var(--muted); line-height: 1.35; }
+.ratio-key span { min-width: 0; padding-right: 10px; box-sizing: border-box; }
+.ratio-key b { display: block; font-weight: 600; color: var(--ink); }
 
 /* range cards: the dark colour on top, the light one below */
 .range-card { border-radius: var(--radius); overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); display: flex; flex-direction: column; }
