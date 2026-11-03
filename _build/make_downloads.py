@@ -17,7 +17,7 @@ CORE = [('Deep Navy', '#10233F', (97, 84, 46, 52)), ('Slate Grey', '#6F7D8A', (6
 RANGE = [('Perio Gum Rose', '#A4546F', (34, 77, 39, 7)), ('Perio Gum Pink', '#F4E1E8', (2, 12, 2, 0)),
          ('Daily Green', '#2E5D4F', (81, 43, 67, 31)), ('Daily Mint', '#D8E8DE', (15, 2, 13, 0)),
          ('Restore Teal', '#1F6B72', (86, 43, 48, 17)), ('Restore Aqua', '#DCEFEF', (13, 0, 5, 0)),
-         ('FPD Violet (reserved)', '#524677', (78, 81, 27, 11)), ('FPD Lilac (reserved)', '#E4E1EE', (9, 9, 1, 0))]
+         ('Potential FPD Violet', '#524677', (78, 81, 27, 11)), ('Potential FPD Lilac', '#E4E1EE', (9, 9, 1, 0))]
 PNG_WIDTH = {'wordmark': 2400, 'implant-care': 2400, 'brand-line': 2400, 'monogram': 2000}
 
 
