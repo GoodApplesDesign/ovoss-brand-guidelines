@@ -213,6 +213,11 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 .values-toggle[aria-expanded="true"]::after { content: "\2212"; }
 .values-toggle:hover { border-color: var(--navy); }
 .rc-chip .copyable { color: inherit; text-align: left; font-size: 12px; }
+.range-logos-head { margin: clamp(48px, 6vw, 72px) 0 20px; }
+.range-logos > div { display: flex; flex-direction: column; gap: 8px; }
+.range-logos .panel { aspect-ratio: 16 / 9; }
+.range-logos .panel > img.logo { width: 64%; max-height: none; }
+.range-logos .cap { margin-top: 4px; }
 
 /* ---------- do / don't ---------- */
 .rule { display: flex; flex-direction: column; }
