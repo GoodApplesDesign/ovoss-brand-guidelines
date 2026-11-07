@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ovoss Studio</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #E4E6E9; overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const params = new URLSearchParams(location.search);
+const SCENE = params.get('scene') || 'range';
+const BG = '#' + (params.get('bg') || 'E4E6E9');
+
+// ---------- textures ----------
+function loadImage(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
+const [tubeImg, cartonImg, mwFrontImg, mwBackImg] = await Promise.all(
+  ['tex/tube-label.png', 'tex/carton.png', 'tex/mw-front.png', 'tex/mw-back.png'].map(loadImage));
+
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(window.devicePixelRatio || 1);
+renderer.setSize(window.innerWidth, window.innerHeight, false);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NeutralToneMapping; renderer.toneMappingExposure = 1.0;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.VSMShadowMap;
+const maxAniso = renderer.capabilities.getMaxAnisotropy();
+function tex(canvasOrImg, repeat) {
+  const t = canvasOrImg instanceof HTMLCanvasElement ? new THREE.CanvasTexture(canvasOrImg) : new THREE.Texture(canvasOrImg);
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = maxAniso; if (repeat) t.wrapS = THREE.RepeatWrapping; t.needsUpdate = true;
+  return t;
+}
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(BG);
+const pmrem = new THREE.PMREMGenerator(renderer);
+try {
+  const hdr = await new RGBELoader().loadAsync('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_09_1k.hdr');
+  hdr.mapping = THREE.EquirectangularReflectionMapping;
+  scene.environment = pmrem.fromEquirectangular(hdr).texture;
+  scene.environmentRotation = new THREE.Euler(0, Math.PI * parseFloat(params.get('envrot') || '1.0'), 0);
+  document.body.dataset.env = 'hdr';
+} catch (e) { scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture; document.body.dataset.env = 'room'; }
+scene.environmentIntensity = 0.8;
+const key = new THREE.DirectionalLight(0xffffff, 1.25);
+key.castShadow = true; key.shadow.mapSize.set(4096, 4096); key.shadow.radius = 14; key.shadow.blurSamples = 25; key.shadow.bias = -0.0004;
+const sc = key.shadow.camera; sc.left = -260; sc.right = 260; sc.top = 260; sc.bottom = -260; sc.near = 10; sc.far = 1600;
+scene.add(key); scene.add(key.target);
+scene.add(new THREE.AmbientLight(0xffffff, 0.05));
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(4000, 4000), new THREE.ShadowMaterial({ opacity: 0.2 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+
+// soft contact shadow under each object
+const contactTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+  const gr = g.createRadialGradient(128, 128, 0, 128, 128, 128); gr.addColorStop(0, 'rgba(20,28,40,0.55)'); gr.addColorStop(0.55, 'rgba(20,28,40,0.16)'); gr.addColorStop(1, 'rgba(20,28,40,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 256, 256); return new THREE.CanvasTexture(c); })();
+function contact(w, d) { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), new THREE.MeshBasicMaterial({ map: contactTex, transparent: true, depthWrite: false, opacity: 0.7 }));
+  m.rotation.x = -Math.PI / 2; m.position.y = 0.05; return m; }
+
+function grain(size, amt) { const c = document.createElement('canvas'); c.width = c.height = size; const g = c.getContext('2d'); const d = g.createImageData(size, size);
+  for (let i = 0; i < d.data.length; i += 4) { const v = 128 + (Math.random() - 0.5) * amt; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+  g.putImageData(d, 0, 0); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; }
+const paperGrain = grain(512, 90), plasticGrain = grain(512, 40);
+function finish(mesh) { mesh.castShadow = true; mesh.receiveShadow = true; return mesh; }
+function fixSeam(geo, rows, cols) { // average normals of the duplicated first/last column
+  const n = geo.attributes.normal;
+  for (let i = 0; i <= rows; i++) { const a = i * (cols + 1), b = a + cols;
+    const v = new THREE.Vector3(n.getX(a) + n.getX(b), n.getY(a) + n.getY(b), n.getZ(a) + n.getZ(b)).normalize();
+    n.setXYZ(a, v.x, v.y, v.z); n.setXYZ(b, v.x, v.y, v.z); }
+}
+// Generic swept surface: rows up y, columns around a closed section, spaced by arc length.
+// section(y) -> {a, b, n}: superellipse half-width a (x), half-depth b (z), exponent n. u = 0.5 at the front centre.
+function sweep(ys, section, cols, uOf) {
+  const K = 1440, pos = [], uv = [], idx = [];
+  ys.forEach((y, i) => {
+    const { a, b, n } = section(y), e = 2 / n, pt = ph => [a * Math.sign(Math.sin(ph)) * Math.pow(Math.abs(Math.sin(ph)), e), b * Math.sign(Math.cos(ph)) * Math.pow(Math.abs(Math.cos(ph)), e)];
+    const cum = new Float64Array(K + 1); let [px, pz] = pt(-Math.PI);
+    for (let k = 1; k <= K; k++) { const [x, z] = pt(-Math.PI + 2 * Math.PI * k / K); cum[k] = cum[k - 1] + Math.hypot(x - px, z - pz); px = x; pz = z; }
+    const tot = cum[K]; let k = 0;
+    for (let j = 0; j <= cols; j++) {
+      const target = tot * j / cols; while (k < K - 1 && cum[k + 1] < target) k++;
+      const f = (target - cum[k]) / Math.max(1e-9, cum[k + 1] - cum[k]);
+      const [x, z] = pt(-Math.PI + 2 * Math.PI * (k + f) / K);
+      pos.push(x, y, z);
+      const s = target - tot / 2; // arc length from the front centre
+      uv.push(...uOf(s, tot, y, j / cols));
+    }
+  });
+  for (let i = 0; i < ys.length - 1; i++) for (let j = 0; j < cols; j++) { const a = i * (cols + 1) + j, b = a + cols + 1; idx.push(a, a + 1, b, a + 1, b + 1, b); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
+  g.computeVertexNormals(); fixSeam(g, ys.length - 1, cols);
+  return g;
+}
+function range(a, b, n) { return Array.from({ length: n + 1 }, (_, i) => a + (b - a) * i / n); }
+const white = (rough = 0.42, cc = 0.25) => new THREE.MeshPhysicalMaterial({ color: 0xf4f4f2, roughness: rough * 0.85, clearcoat: cc + 0.2, clearcoatRoughness: 0.15 });
+
+// ---------- toothpaste tube (Multitubes Ø35 x 120, label 114 x 103) ----------
+function makeTube() {
+  const P = 111, R = P / (2 * Math.PI), LEN = 120, X0 = 291.35, FRONT = 319.1, LAB_L = 280.35, LAB_R = 394.35, PX = 17;
+  const W = Math.round(P * PX), H = Math.round(LEN * PX), k = tubeImg.width / (LAB_R - LAB_L);
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
+  g.fillStyle = '#f4f4f1'; g.fillRect(0, 0, W, H);
+  g.fillStyle = 'rgba(0,0,0,0.05)'; for (let y = 0.6; y < 7; y += 1) g.fillRect(0, y * PX, W, 0.35 * PX);
+  const ly = 10 * PX, lh = 103 * PX, seam = (LAB_R - X0) * PX;
+  g.drawImage(tubeImg, (LAB_R - P - LAB_L) * k, 0, (X0 + P - LAB_R) * k, tubeImg.height, seam, ly, W - seam, lh);
+  g.drawImage(tubeImg, (X0 - LAB_L) * k, 0, (LAB_R - X0) * k, tubeImg.height, 0, ly, seam, lh);
+  g.fillStyle = '#DCEAF4'; g.fillRect(0, ly + lh - 2, W, H - (ly + lh) + 2); // ice blue runs down to the cap
+  const sh = g.createLinearGradient(seam, 0, seam + 0.9 * PX, 0); sh.addColorStop(0, 'rgba(0,0,0,0.14)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = sh; g.fillRect(seam, ly, 0.9 * PX, lh);
+  const perim = (a, b) => Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
+  const semiA = b => { let lo = b, hi = P / 4 + 2; for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2; if (perim(m, b) < P) lo = m; else hi = m; } return (lo + hi) / 2; };
+  const depth = y => { const s0 = LEN - 7; if (y >= s0) return 0.45; const t = Math.min(1, Math.max(0, (y - 6) / (s0 - 6))); return Math.max(0.45, R * (1 - Math.pow(t, 1.45))); };
+  const geo = sweep(range(0, LEN, 220), y => { const b = depth(y); return { a: semiA(b), b, n: 2 }; }, 300,
+    (s, tot, y) => [(FRONT + s - X0) / P, y / LEN]);
+  const mat = new THREE.MeshPhysicalMaterial({ map: tex(cv, true), roughness: 0.32, clearcoat: 0.8, clearcoatRoughness: 0.08, bumpMap: plasticGrain, bumpScale: 0.6 });
+  mat.bumpMap.repeat.set(6, 6);
+  const grp = new THREE.Group();
+  const body = finish(new THREE.Mesh(geo, mat)); body.position.y = 20; grp.add(body);
+  const b = depth(LEN), seal = new THREE.Shape(); seal.absellipse(0, 0, semiA(b), b, 0, Math.PI * 2);
+  const top = new THREE.Mesh(new THREE.ShapeGeometry(seal, 64), white()); top.rotation.x = -Math.PI / 2; top.position.y = 140; grp.add(top);
+  // stand-up flip cap
+  const capPts = [[0, 0], [15.9, 0], [17.6, 0.7], [17.9, 2.2], [17.9, 13], [17.55, 13.5], [17.9, 14], [17.9, 18.8], [17.4, 19.8], [12, 20.3], [0, 20.3]].map(([x, y]) => new THREE.Vector2(x, y));
+  grp.add(finish(new THREE.Mesh(new THREE.LatheGeometry(capPts, 128), white(0.4, 0.3))));
+  grp.add(contact(70, 70));
+  grp.userData.h = 140;
+  return grp;
+}
+
+// ---------- carton (42 x 42 x 140), mapped from the dieline sheet ----------
+function makeCarton() {
+  const AW = 276.44, AH = 320.03, uv = (x, y) => [x / AW, y / AH];
+  const faces = [ // corners as [x,y,z] with sheet coordinates in mm, listed counter-clockwise from outside
+    [[-21, 0, 21, 148.87, 91.93], [21, 0, 21, 190.87, 91.93], [21, 140, 21, 190.87, 231.93], [-21, 140, 21, 148.87, 231.93]],   // front
+    [[21, 0, 21, 190.87, 91.93], [21, 0, -21, 232.37, 91.93], [21, 140, -21, 232.37, 231.93], [21, 140, 21, 190.87, 231.93]],   // right side
+    [[21, 0, -21, 64.87, 91.93], [-21, 0, -21, 106.87, 91.93], [-21, 140, -21, 106.87, 231.93], [21, 140, -21, 64.87, 231.93]], // back
+    [[-21, 0, -21, 106.87, 91.93], [-21, 0, 21, 148.87, 91.93], [-21, 140, 21, 148.87, 231.93], [-21, 140, -21, 106.87, 231.93]], // left side
+    [[21, 140, -21, 64.87, 231.93], [-21, 140, -21, 106.87, 231.93], [-21, 140, 21, 106.87, 273.93], [21, 140, 21, 64.87, 273.93]], // top lid
+    [[-21, 0, 21, 148.87, 91.93], [21, 0, 21, 190.87, 91.93], [21, 0, -21, 190.87, 49.93], [-21, 0, -21, 148.87, 49.93]],     // bottom flap
+  ];
+  const pos = [], uvs = [], idx = [];
+  faces.forEach(f => {
+    const base = pos.length / 3, c = new THREE.Vector3(), p = f.map(q => new THREE.Vector3(q[0], q[1], q[2]));
+    p.forEach(v => c.add(v)); c.multiplyScalar(0.25);
+    const nrm = new THREE.Vector3().crossVectors(p[1].clone().sub(p[0]), p[2].clone().sub(p[0]));
+    const out = c.clone().sub(new THREE.Vector3(0, 70, 0));
+    const order = nrm.dot(out) > 0 ? [0, 1, 2, 3] : [0, 3, 2, 1];
+    order.forEach(o => { pos.push(f[o][0], f[o][1], f[o][2]); uvs.push(...uv(f[o][3], f[o][4])); });
+    idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+  });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2)); g.setIndex(idx); g.computeVertexNormals();
+  const mat = new THREE.MeshPhysicalMaterial({ map: tex(cartonImg), roughness: 0.62, clearcoat: 0.35, clearcoatRoughness: 0.22, bumpMap: paperGrain, bumpScale: 1.2 });
+  mat.bumpMap.repeat.set(10, 10);
+  const grp = new THREE.Group(); grp.add(finish(new THREE.Mesh(g, mat))); grp.add(contact(80, 80));
+  grp.userData.h = 140;
+  return grp;
+}
+
+// ---------- 500 ml mouthwash bottle (assumed shape; labels 59 x 125) ----------
+function makeBottle() {
+  const A = 33, B = 23, N = 2.6, NECK = 13.5, BODY_TOP = 152, SHOULDER_TOP = 178, NECK_TOP = 186, BASE_R = 6, LAB_Y = 16, PX = 14;
+  const sect = y => {
+    if (y <= BASE_R) { const off = BASE_R - Math.sqrt(Math.max(0, BASE_R * BASE_R - (BASE_R - y) * (BASE_R - y))); return { a: A - off, b: B - off, n: N }; }
+    if (y <= BODY_TOP) return { a: A, b: B, n: N };
+    if (y <= SHOULDER_TOP) { const t = (y - BODY_TOP) / (SHOULDER_TOP - BODY_TOP), e = 0.5 - 0.5 * Math.cos(Math.PI * t);
+      return { a: A + (NECK - A) * e, b: B + (NECK - B) * e, n: N + (2 - N) * e }; }
+    return { a: NECK, b: NECK, n: 2 };
+  };
+  // body perimeter, for the label texture width
+  let Pb = 0; { const e = 2 / N; let px = 0, pz = B; for (let k = 1; k <= 4000; k++) { const ph = 2 * Math.PI * k / 4000; const x = A * Math.sign(Math.sin(ph)) * Math.pow(Math.abs(Math.sin(ph)), e), z = B * Math.sign(Math.cos(ph)) * Math.pow(Math.abs(Math.cos(ph)), e); Pb += Math.hypot(x - px, z - pz); px = x; pz = z; } }
+  const W = Math.round(Pb * PX), H = Math.round(NECK_TOP * PX), lw = 59 * PX, lh = 125 * PX, ly = H - (LAB_Y + 125) * PX;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
+  g.fillStyle = '#f5f5f3'; g.fillRect(0, 0, W, H);
+  const label = (img, cx) => { g.save(); g.shadowColor = 'rgba(0,0,0,0)'; g.drawImage(img, cx - lw / 2, ly, lw, lh); g.restore();
+    g.fillStyle = 'rgba(0,0,0,0.06)'; g.fillRect(cx - lw / 2 - 1, ly, 2, lh); g.fillRect(cx + lw / 2 - 1, ly, 2, lh); };
+  label(mwFrontImg, W / 2); label(mwBackImg, 0); label(mwBackImg, W);
+  const ys = [...range(0, BASE_R, 12), ...range(BASE_R + 1, BODY_TOP, 50), ...range(BODY_TOP + 0.5, SHOULDER_TOP, 40), ...range(SHOULDER_TOP + 0.5, NECK_TOP, 6)];
+  const geo = sweep(ys, sect, 320, (s, tot, y) => [0.5 + s / tot, y / NECK_TOP]);
+  const mat = new THREE.MeshPhysicalMaterial({ map: tex(cv, true), roughness: 0.4, clearcoat: 0.6, clearcoatRoughness: 0.12, bumpMap: plasticGrain, bumpScale: 0.5 });
+  mat.bumpMap.repeat.set(8, 8);
+  const grp = new THREE.Group(); grp.add(finish(new THREE.Mesh(geo, mat)));
+  // base
+  const bs = new THREE.Shape(); { const s0 = sect(0), e = 2 / s0.n; for (let k = 0; k <= 128; k++) { const ph = 2 * Math.PI * k / 128; const x = s0.a * Math.sign(Math.sin(ph)) * Math.pow(Math.abs(Math.sin(ph)), e), z = s0.b * Math.sign(Math.cos(ph)) * Math.pow(Math.abs(Math.cos(ph)), e); if (k) bs.lineTo(x, z); else bs.moveTo(x, z); } }
+  const base = new THREE.Mesh(new THREE.ShapeGeometry(bs), white()); base.rotation.x = Math.PI / 2; base.position.y = 0.01; grp.add(base);
+  // screw cap with fine ribs
+  const capPts = [[0, NECK_TOP - 4], [16.2, NECK_TOP - 4], [16.6, NECK_TOP - 3.4], [16.6, NECK_TOP + 18], [16.1, NECK_TOP + 19.4], [14.5, NECK_TOP + 20], [0, NECK_TOP + 20]].map(([x, y]) => new THREE.Vector2(x, y));
+  const capGeo = new THREE.LatheGeometry(capPts, 180);
+  { const p = capGeo.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i), y = p.getY(i), r = Math.hypot(x, z);
+      if (r > 16 && y > NECK_TOP - 2.5 && y < NECK_TOP + 17.5) { const ang = Math.atan2(z, x), rr = r - 0.22 * (0.5 + 0.5 * Math.cos(ang * 90)); p.setXYZ(i, Math.cos(ang) * rr, y, Math.sin(ang) * rr); } }
+    capGeo.computeVertexNormals(); }
+  grp.add(finish(new THREE.Mesh(capGeo, white(0.38, 0.3))));
+  grp.add(contact(110, 80));
+  grp.userData.h = NECK_TOP + 20;
+  return grp;
+}
+
+// ---------- compositions ----------
+const deg = d => d * Math.PI / 180;
+const objs = [];
+function place(o, x, z, rotDeg) { o.position.set(x, 0, z); o.rotation.y = deg(rotDeg); scene.add(o); objs.push(o); return o; }
+const S = {
+  'toothpaste': () => { place(makeCarton(), -25, -4, 28); place(makeTube(), 27, 6, -16); return { el: 9, az: 0, m: 1.16 }; },
+  'mouthwash': () => { place(makeBottle(), 0, 0, 24); return { el: 8, az: 0, m: 1.12 }; },
+  'range': () => { place(makeCarton(), -64, 0, 26); place(makeBottle(), 0, -12, 12); place(makeTube(), 58, 8, -14); return { el: 9, az: 0, m: 1.16 }; },
+  'tube-front': () => { place(makeTube(), 0, 0, 0); return { el: 4, az: 0 }; },
+  'tube-back': () => { place(makeTube(), 0, 0, 180); return { el: 4, az: 0 }; },
+  'carton-front': () => { place(makeCarton(), 0, 0, 30); return { el: 8, az: 0 }; },
+  'carton-back': () => { place(makeCarton(), 0, 0, 210); return { el: 8, az: 0 }; },
+  'carton-side': () => { place(makeCarton(), 0, 0, -60); return { el: 8, az: 0 }; },
+  'mw-front': () => { place(makeBottle(), 0, 0, 18); return { el: 6, az: 0 }; },
+  'mw-back': () => { place(makeBottle(), 0, 0, 198); return { el: 6, az: 0 }; },
+};
+const view = (S[SCENE] || S.range)();
+
+// frame everything with a margin
+const box = new THREE.Box3(); objs.forEach(o => box.expandByObject(o.children[0]));
+objs.forEach(o => o.children.forEach(c => { if (c.geometry && c.geometry.type !== 'PlaneGeometry') box.expandByObject(c); }));
+const size = box.getSize(new THREE.Vector3()), centre = box.getCenter(new THREE.Vector3());
+const aspect = window.innerWidth / window.innerHeight, fov = 22, margin = parseFloat(params.get('margin') || String(view.m || 1.14));
+const camera = new THREE.PerspectiveCamera(fov, aspect, 1, 10000);
+const halfH = Math.max(size.y / 2, size.x / 2 / aspect, size.z / 2 / aspect) * margin;
+const dist = halfH / Math.tan(deg(fov / 2)) + size.z / 2;
+const E = deg(view.el), Az = deg(view.az);
+const target = centre.clone(); target.y = size.y * 0.5 - size.y * 0.02;
+camera.position.set(target.x + dist * Math.sin(Az) * Math.cos(E), target.y + dist * Math.sin(E), target.z + dist * Math.cos(Az) * Math.cos(E));
+camera.lookAt(target);
+// key light from the upper left, a little in front
+key.position.set(target.x - 300, 950, target.z + 560); key.target.position.copy(target).setY(0);
+
+renderer.render(scene, camera);
+const gl = renderer.getContext(), dbg = gl.getExtension('WEBGL_debug_renderer_info');
+document.body.dataset.gpu = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : 'n/a';
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>

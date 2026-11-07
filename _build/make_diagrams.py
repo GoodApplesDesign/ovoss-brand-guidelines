@@ -12,8 +12,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 LOGOS = os.path.join(ROOT, 'assets', 'logo', 'svg')
 OUT = os.path.join(HERE, 'src', 'partials')
-O_INDEX = 3  # the O is the 4th shape in the exported wordmark (DOM order)
-O_BOX = {'wordmark': (0, 1.188, 28.873, 29.989), 'implant-care': (0, 1.426, 34.648, 35.987), 'brand-line': (0, 1.426, 34.648, 35.987)}  # measured with getBBox()
+O_INDEX = 0  # the O is the first shape in the v2 wordmark SVGs (DOM order)
+O_BOX = {'wordmark': (0.0, 1.136, 30.884, 30.218), 'implant-care': (0.0, 1.363, 37.061, 36.262), 'brand-line': (0.0, 1.363, 37.061, 36.262)}  # x, y, w, h of the O (v2, from make_logos_v2.py)
 
 
 def inner(svg):

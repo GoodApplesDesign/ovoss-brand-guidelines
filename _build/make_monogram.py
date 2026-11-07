@@ -8,8 +8,8 @@ import os, re
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 LOGOS = os.path.join(ROOT, 'assets', 'logo', 'svg')
-O_INDEX = 3                                   # the O is the 4th shape in the exported wordmark
-O_BOX = (0, 1.188, 28.873, 29.989)            # its bounds in the wordmark, measured with getBBox()
+O_INDEX = 0                                   # the O is the first shape in the v2 wordmark SVG
+O_BOX = (0.0, 1.136, 30.884, 30.218)          # its bounds in the v2 wordmark (x, y, w, h)
 SIZE = 100                                    # viewBox, tight to the outside of the ring
 RING = 4.6                                    # ring weight, % of the diameter
 O_HEIGHT = 44                                 # O height, % of the diameter
