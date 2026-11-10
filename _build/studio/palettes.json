@@ -47,37 +47,37 @@
     },
     "bright": {
       "name": "Bright",
-      "note": "A clear clinical blue with an aqua accent. Fresh, and mostly white.",
-      "primary": "#1A5BAE",
-      "accent": "#1C8CC2",
-      "light": "#DDF1FB",
-      "band": "#D6E2EC",
+      "note": "A deep cobalt with a clear blue accent, and livelier range colours. Fresh, and mostly white.",
+      "primary": "#1B3F94",
+      "accent": "#437FC0",
+      "light": "#E6EFF9",
+      "band": "#D8E1E9",
       "names": {
-        "primary": "Clinical Azure",
-        "accent": "Oxygen Aqua",
-        "light": "Aqua Mist",
+        "primary": "Cobalt",
+        "accent": "Clear Blue",
+        "light": "Sky Mist",
         "band": "Cloud Grey"
       },
       "ranges": {
         "Implant Care": [
-          "#1A5BAE",
-          "#DDF1FB"
+          "#1B3F94",
+          "#E6EFF9"
         ],
         "Perio Care": [
-          "#B53F71",
+          "#B7366D",
           "#FBE5EE"
         ],
         "Daily Care": [
-          "#377B43",
-          "#E2EFE0"
+          "#3D8036",
+          "#E5F2DF"
         ],
         "Restore": [
-          "#217F79",
-          "#DAF3EF"
+          "#048584",
+          "#D6F4F3"
         ],
         "Potential FPD": [
-          "#634497",
-          "#EFE8F9"
+          "#7E469D",
+          "#F4EBF9"
         ]
       }
     }
@@ -87,35 +87,35 @@
     {
       "from": "#10233F",
       "name_from": "Deep Navy",
-      "to": "#1A5BAE",
-      "name_to": "Clinical Azure",
+      "to": "#1B3F94",
+      "name_to": "Cobalt",
       "cmyk_to": [
-        93,
-        73,
-        4,
-        0
+        100,
+        90,
+        13,
+        2
       ]
     },
     {
       "from": "#6F7D8A",
       "name_from": "Slate Grey",
-      "to": "#1C8CC2",
-      "name_to": "Oxygen Aqua",
+      "to": "#437FC0",
+      "name_to": "Clear Blue",
       "cmyk_to": [
-        80,
-        38,
-        11,
+        76,
+        48,
+        6,
         0
       ]
     },
     {
       "from": "#DCEAF4",
       "name_from": "Ice Blue",
-      "to": "#DDF1FB",
-      "name_to": "Aqua Mist",
+      "to": "#E6EFF9",
+      "name_to": "Sky Mist",
       "cmyk_to": [
-        12,
-        1,
+        8,
+        3,
         1,
         0
       ]
@@ -123,24 +123,24 @@
     {
       "from": "#C6CDD5",
       "name_from": "Soft Silver",
-      "to": "#D6E2EC",
+      "to": "#D8E1E9",
       "name_to": "Cloud Grey",
       "cmyk_to": [
-        15,
+        14,
         7,
-        4,
+        5,
         0
       ]
     },
     {
       "from": "#A4546F",
       "name_from": "Gum Rose",
-      "to": "#B53F71",
+      "to": "#B7366D",
       "name_to": "Raspberry",
       "cmyk_to": [
-        30,
-        89,
-        37,
+        29,
+        92,
+        38,
         5
       ]
     },
@@ -159,71 +159,71 @@
     {
       "from": "#2E5D4F",
       "name_from": "Green",
-      "to": "#377B43",
+      "to": "#3D8036",
       "name_to": "Leaf Green",
       "cmyk_to": [
-        79,
-        31,
-        92,
-        18
+        78,
+        29,
+        100,
+        15
       ]
     },
     {
       "from": "#D8E8DE",
       "name_from": "Mint",
-      "to": "#E2EFE0",
+      "to": "#E5F2DF",
       "name_to": "Mint",
       "cmyk_to": [
-        11,
+        10,
         1,
-        14,
+        15,
         0
       ]
     },
     {
       "from": "#1F6B72",
       "name_from": "Mineral Teal",
-      "to": "#217F79",
-      "name_to": "Sea Glass",
+      "to": "#048584",
+      "name_to": "Teal",
       "cmyk_to": [
-        83,
-        33,
-        55,
-        12
+        85,
+        31,
+        50,
+        8
       ]
     },
     {
       "from": "#DCEFEF",
       "name_from": "Aqua",
-      "to": "#DAF3EF",
+      "to": "#D6F4F3",
       "name_to": "Aqua",
       "cmyk_to": [
-        13,
+        15,
         0,
-        8,
+        6,
         0
       ]
     },
     {
       "from": "#524677",
       "name_from": "Violet",
-      "to": "#634497",
+      "to": "#7E469D",
       "name_to": "Violet",
       "cmyk_to": [
-        76,
-        88,
-        9,
-        1
+        63,
+        87,
+        5,
+        0
       ]
     },
     {
       "from": "#E4E1EE",
       "name_from": "Lilac",
-      "to": "#EFE8F9",
+      "to": "#F4EBF9",
       "name_to": "Lilac",
       "cmyk_to": [
-        4,
-        9,
+        3,
+        8,
         0,
         0
       ]

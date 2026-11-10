@@ -344,9 +344,9 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 
 /* ---------- palette switch: Original / Bright, pinned to every page ---------- */
 [data-palette="bright"] {
-  --navy: #1A5BAE; --slate: #1C8CC2; --ice: #DDF1FB; --silver: #D6E2EC;
-  --green: #377B43; --mint: #E2EFE0; --rose: #B53F71; --gum: #FBE5EE; --teal: #217F79; --aqua: #DAF3EF; --violet: #634497; --lilac: #EFE8F9;
-  --faint: rgba(26, 91, 174, .5); --line: rgba(26, 91, 174, .12);
+  --navy: #1B3F94; --slate: #437FC0; --ice: #E6EFF9; --silver: #D8E1E9;
+  --green: #3D8036; --mint: #E5F2DF; --rose: #B7366D; --gum: #FBE5EE; --teal: #048584; --aqua: #D6F4F3; --violet: #7E469D; --lilac: #F4EBF9;
+  --faint: rgba(27, 63, 148, .5); --line: rgba(27, 63, 148, .12);
 }
 .pal-pending .shell, .pal-pending .sidebar { visibility: hidden; }
 .pal-switch { position: absolute; right: var(--gut); top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 2px; padding: 3px; border: 1px solid rgba(16, 35, 63, .12); border-radius: 999px; background: #fff; }
@@ -354,7 +354,7 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 .pal-switch button:hover { color: #10233F; }
 .pal-switch button[aria-pressed="true"] { color: #fff; }
 .pal-switch button[data-pal="original"][aria-pressed="true"] { background: #10233F; }
-.pal-switch button[data-pal="bright"][aria-pressed="true"] { background: #1A5BAE; }
+.pal-switch button[data-pal="bright"][aria-pressed="true"] { background: #1B3F94; }
 .pal-switch i { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .9); }
 .pal-note { display: none; position: absolute; right: calc(100% + 12px); white-space: nowrap; color: #6F7D8A; font-size: 12px; }
 [data-palette="bright"] .pal-note { display: block; }
