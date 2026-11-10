@@ -81,42 +81,67 @@
         ]
       }
     },
-    "aqua": {
-      "name": "Aqua",
-      "note": "Navy gives way to a sea-glass teal with an aqua mist. Fresh, calm, and less corporate.",
-      "primary": "#076E74",
-      "accent": "#0D959D",
-      "light": "#DEF2F2",
-      "band": "#D1E0E0",
+    "light": {
+      "name": "Light",
+      "note": "The same colour families, lighter. The packs go pale blue and pale tints replace the dark blocks. Softer, closer to premium skincare.",
+      "primary": "#025890",
+      "accent": "#3E81B9",
+      "light": "#CADFF5",
+      "band": "#FFFFFF",
+      "solid": {
+        "bg": "#C2D9F7",
+        "on": "#025890",
+        "v": "#3E81B9"
+      },
       "names": {
-        "primary": "Deep Aqua",
-        "accent": "Aqua",
-        "light": "Aqua Mist",
-        "band": "Sea Mist"
+        "primary": "Clear Blue",
+        "accent": "Sky Blue",
+        "light": "Blue Mist",
+        "band": "White",
+        "solid": "Powder Blue",
+        "paper": "Blue Paper"
       },
       "ranges": {
         "Implant Care": [
-          "#076E74",
-          "#DEF2F2"
+          "#025890",
+          "#C2D9F7"
         ],
         "Perio Care": [
-          "#A64D6E",
-          "#FAE6ED"
+          "#A04467",
+          "#F7D4DF"
         ],
         "Daily Care": [
-          "#457942",
-          "#E6F1E1"
+          "#386E4B",
+          "#CDE6CB"
         ],
         "Restore": [
-          "#216E9C",
-          "#E1ECF8"
+          "#07767D",
+          "#B6E9EC"
         ],
         "Potential FPD": [
-          "#624F8F",
-          "#EEE9F7"
+          "#5D508E",
+          "#E2D1EF"
         ]
-      }
+      },
+      "paper": "#EDF4FC"
     }
   },
-  "_ranges": "ranges: [dark, light] per range. Dark = lid, base flap, badge and the V on white; light = the wave and the V on the dark. Logo letters and type stay the palette's primary. Bright keeps each range's hue at the option's brightness. Aqua takes Restore's teal for the core, so Restore moves to a mineral blue and Daily Care to a fresher leaf green (worked out in CIE LCh)."
+  "_ranges": "ranges: [dark, light] per range. Dark = lid, base flap, badge and the V on white; light = the wave and the V on the dark. Logo letters and type stay the palette's primary. Hues are fixed per range (Joey, 11 Nov): blue core, pink Perio, green Daily, teal/aqua Restore, purple FPD. Options change tone only. In Light the dark blocks become the range's pale tint (second value) with the core type on top, and the first value is the deep tone used for the V and the badge.",
+  "regions": {
+    "carton.png": [
+      [
+        870,
+        390,
+        1564,
+        1250
+      ],
+      [
+        2060,
+        3232,
+        2755,
+        4090
+      ]
+    ]
+  },
+  "_regions": "Solid blocks (carton lid and base flap), in texture pixels. A palette with 'solid' recolours these blocks to solid.bg, with the letters in solid.on and the V in solid.v; everywhere else follows the normal roles."
 }

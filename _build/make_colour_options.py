@@ -17,7 +17,20 @@ CFG = json.load(open(os.path.join(HERE, 'studio', 'palettes.json'), encoding='ut
 PAL = CFG['palettes']
 KEYS = list(PAL)
 
-RANGE_NOTE = {'aqua': 'Restore moves to a mineral blue, and Daily Care to a fresher green, to make room for the teal.'}
+RANGE_NOTE = {}
+
+
+def swatches(p):
+    """(colour, name) pairs for the core row. Light palettes show their lid tint and paper too."""
+    if 'solid' in p:
+        return [(p['primary'], p['names']['primary']), (p['solid']['bg'], p['names']['solid']), (p['accent'], p['names']['accent']),
+                (p['light'], p['names']['light']), (p['paper'], p['names']['paper'])]
+    return [(p[r], p['names'][r]) for r in ('primary', 'accent', 'light', 'band')] + [('#FFFFFF', 'White')]
+
+
+def light_edge(hexcol):
+    h = hexcol.lstrip('#'); r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b > 200
 
 
 def wordmark_symbol():
@@ -65,19 +78,23 @@ def cell(key, inner, cls=''):
 heads, shots, cores, ranges = [], [], [], []
 for i, key in enumerate(KEYS):
     p = PAL[key]
+    strip = ''.join(f'<i style="background:{l if "solid" in p else d}"></i>' for d, l in p['ranges'].values())
     heads.append(f'<button class="opt" data-col="{key}" aria-pressed="{"true" if i == 0 else "false"}">'
                  f'<span class="opt-name">{html.escape(p["name"])}</span>'
-                 f'<span class="opt-strip" aria-hidden="true">{"".join(f"<i style=background:{d}></i>" for d, _ in p["ranges"].values())}</span></button>')
+                 f'<span class="opt-strip" aria-hidden="true">{strip}</span></button>')
     shots.append(cell(key,
         f'<a class="shot" href="assets/img/options/{key}.jpg" target="_blank" rel="noopener">'
         f'<img src="assets/img/options/{key}-crop.jpg" alt="Implant Care toothpaste carton, mouthwash and tube in the {html.escape(p["name"])} palette" width="1250" height="1000"></a>'
         f'<p class="note">{html.escape(p["note"])}</p>'))
-    sw = ''.join(f'<div class="sw"><i style="background:{p[r]}"{" class=edge" if r in ("light", "band") else ""}></i>'
-                 f'<b>{p["names"][r]}</b><span>{p[r]}</span></div>' for r in ('primary', 'accent', 'light', 'band'))
+    sw = ''.join(f'<div class="sw"><i style="background:{c}"{" class=edge" if light_edge(c) else ""}></i>'
+                 f'<b>{nm}</b><span>{c}</span></div>' for c, nm in swatches(p))
     cores.append(cell(key, f'<div class="sws">{sw}</div>'))
+    lite = 'solid' in p   # light palettes: the block is the pale tint, logo in the core colour, V in the range's deep tone
     rows = ''.join(
-        f'<div class="rr"><div class="rr-d" style="background:{d}">{wm("#FFFFFF", l, f"Ovoss logo on {name}")}</div>'
-        f'<div class="rr-l" style="background:{l}"></div><div class="rr-t"><b>{name}</b><span>{d} &middot; {l}</span></div></div>'
+        (f'<div class="rr"><div class="rr-d" style="background:{l}">{wm(p["primary"], d, f"Ovoss logo on {name}")}</div>'
+         f'<div class="rr-l" style="background:{d}"></div><div class="rr-t"><b>{name}</b><span>{l} &middot; {d}</span></div></div>') if lite else
+        (f'<div class="rr"><div class="rr-d" style="background:{d}">{wm("#FFFFFF", l, f"Ovoss logo on {name}")}</div>'
+         f'<div class="rr-l" style="background:{l}"></div><div class="rr-t"><b>{name}</b><span>{d} &middot; {l}</span></div></div>')
         for name, (d, l) in p['ranges'].items())
     note = f'<p class="note small">{RANGE_NOTE[key]}</p>' if key in RANGE_NOTE else ''
     ranges.append(cell(key, rows + note, 'rrs'))
@@ -118,8 +135,8 @@ page = f'''<!doctype html>
   .shot:hover img {{ transform: scale(1.02); }}
   .note {{ margin: 12px 0 0; color: var(--muted); font-size: 15px; line-height: 1.5; }}
   .note.small {{ font-size: 13px; margin-top: 10px; }}
-  .sws {{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }}
-  .sw {{ display: grid; gap: 2px; font-size: 13px; line-height: 1.35; }}
+  .sws {{ display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }}
+  .sw {{ display: grid; gap: 2px; font-size: 12px; line-height: 1.35; align-content: start; }}
   .sw i {{ display: block; height: 56px; border-radius: 6px; margin-bottom: 6px; }}
   .sw i.edge {{ box-shadow: inset 0 0 0 1px var(--line); }}
   .sw b {{ font-weight: 600; }}

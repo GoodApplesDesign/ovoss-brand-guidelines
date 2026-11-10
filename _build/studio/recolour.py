@@ -6,7 +6,10 @@ so each pixel is matched to the nearest line between two source colours and rebu
 mix of the palette's colours. Anything left over (the residual) is kept, so nothing is lost.
 
     python3 recolour.py            # all palettes
-    python3 recolour.py b-soft     # one palette
+    python3 recolour.py light      # one palette
+
+A palette with "solid" also recolours the carton's solid blocks (lid, base flap; see "regions") to a light
+colour, with the letters on them in solid.on and the V in solid.v.
 """
 import json, sys, itertools
 from pathlib import Path
@@ -49,13 +52,19 @@ def recolour(arr, dst):
 def main(keys):
     for key in keys:
         pal = CFG['palettes'][key]
-        dst = np.stack([rgb('#FFFFFF'), rgb(pal['primary']), rgb(pal['light']), rgb(pal['band']),
+        dst = np.stack([rgb(pal.get('paper', '#FFFFFF')), rgb(pal['primary']), rgb(pal['light']), rgb(pal['band']),
                         rgb(pal['accent']), rgb('#000000')])
         outdir = HERE / 'tex' / key
         outdir.mkdir(parents=True, exist_ok=True)
+        solid = pal.get('solid')
         for f in FILES:
-            src = Image.open(HERE / 'tex' / f).convert('RGB')
-            Image.fromarray(recolour(np.asarray(src).astype(np.float32), dst)).save(outdir / f)
+            arr = np.asarray(Image.open(HERE / 'tex' / f).convert('RGB')).astype(np.float32)
+            out = recolour(arr, dst)
+            if solid:  # light solid blocks: block colour, letters on it, and the V on it
+                sd = dst.copy(); sd[0], sd[1], sd[2] = rgb(solid['on']), rgb(solid['bg']), rgb(solid['v'])
+                for x0, y0, x1, y1 in CFG.get('regions', {}).get(f, []):
+                    out[y0:y1, x0:x1] = recolour(arr[y0:y1, x0:x1], sd)
+            Image.fromarray(out).save(outdir / f)
         print(key, 'done')
 
 
