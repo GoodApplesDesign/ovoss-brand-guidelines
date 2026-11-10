@@ -9,9 +9,9 @@
     "black": "#000000"
   },
   "palettes": {
-    "a-original": {
+    "original": {
       "name": "Original",
-      "note": "Deep navy, ice blue and silver, from the Oravoss guidelines.",
+      "note": "The current palette. Deep navy does most of the work, with ice blue and silver.",
       "primary": "#0E223E",
       "accent": "#717F8C",
       "light": "#DCEBF7",
@@ -45,45 +45,9 @@
         ]
       }
     },
-    "b-soft": {
-      "name": "Soft",
-      "note": "Navy lifts to a dusk blue, and the silver warms to pearl.",
-      "primary": "#3D5676",
-      "accent": "#6E89AB",
-      "light": "#E3ECF6",
-      "band": "#E5DFD8",
-      "names": {
-        "primary": "Dusk Blue",
-        "accent": "Harbour Blue",
-        "light": "Powder Blue",
-        "band": "Warm Pearl"
-      },
-      "ranges": {
-        "Implant Care": [
-          "#3D5676",
-          "#E3ECF6"
-        ],
-        "Perio Care": [
-          "#975C6F",
-          "#F3E4EA"
-        ],
-        "Daily Care": [
-          "#496B55",
-          "#E0EBE2"
-        ],
-        "Restore": [
-          "#3E727A",
-          "#DEEEEF"
-        ],
-        "Potential FPD": [
-          "#694975",
-          "#ECE6F0"
-        ]
-      }
-    },
-    "c-bright": {
+    "bright": {
       "name": "Bright",
-      "note": "A clear clinical azure with an aqua accent, mostly white.",
+      "note": "A clear clinical blue with an aqua accent. Fresh, lighter on the eye, and mostly white.",
       "primary": "#1A5BAE",
       "accent": "#1C8CC2",
       "light": "#DDF1FB",
@@ -117,42 +81,42 @@
         ]
       }
     },
-    "d-periwinkle": {
-      "name": "Periwinkle",
-      "note": "Blue moves toward violet, with a lilac mist.",
-      "primary": "#464B8E",
-      "accent": "#7378B8",
-      "light": "#EAE9F7",
-      "band": "#E6E0EA",
+    "aqua": {
+      "name": "Aqua",
+      "note": "Navy gives way to a sea-glass teal with an aqua mist. Fresh, calm, and less corporate.",
+      "primary": "#076E74",
+      "accent": "#0D959D",
+      "light": "#DEF2F2",
+      "band": "#D1E0E0",
       "names": {
-        "primary": "Deep Periwinkle",
-        "accent": "Periwinkle",
-        "light": "Lilac Mist",
-        "band": "Pearl Lilac"
+        "primary": "Deep Aqua",
+        "accent": "Aqua",
+        "light": "Aqua Mist",
+        "band": "Sea Mist"
       },
       "ranges": {
         "Implant Care": [
-          "#464B8E",
-          "#EAE9F7"
+          "#076E74",
+          "#DEF2F2"
         ],
         "Perio Care": [
-          "#9E5770",
-          "#F5E4EA"
+          "#A64D6E",
+          "#FAE6ED"
         ],
         "Daily Care": [
-          "#3F674F",
-          "#DFEBE1"
+          "#457942",
+          "#E6F1E1"
         ],
         "Restore": [
-          "#2D6F77",
-          "#DCEFF0"
+          "#216E9C",
+          "#E1ECF8"
         ],
         "Potential FPD": [
-          "#015A88",
-          "#DEEAF5"
+          "#624F8F",
+          "#EEE9F7"
         ]
       }
     }
   },
-  "_ranges": "ranges: [dark, light] per range. Dark = lid, base flap, badge and the V on white; light = the wave and the V on the dark. Logo letters and type stay the palette's primary. B, C and D keep each range's hue from the original and take the option's depth and saturation (worked out in CIE LCh); FPD moves hue in B and D so it doesn't sit on top of Implant Care."
+  "_ranges": "ranges: [dark, light] per range. Dark = lid, base flap, badge and the V on white; light = the wave and the V on the dark. Logo letters and type stay the palette's primary. Bright keeps each range's hue at the option's brightness. Aqua takes Restore's teal for the core, so Restore moves to a mineral blue and Daily Care to a fresher leaf green (worked out in CIE LCh)."
 }
