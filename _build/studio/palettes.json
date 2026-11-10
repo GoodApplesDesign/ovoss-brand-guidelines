@@ -47,37 +47,81 @@
     },
     "bright": {
       "name": "Bright",
-      "note": "A deep cobalt with a clear blue accent, and livelier range colours. Fresh, and mostly white.",
-      "primary": "#1B3F94",
-      "accent": "#437FC0",
-      "light": "#E6EFF9",
-      "band": "#D8E1E9",
+      "note": "One blue family: a deep cobalt with lighter tones of the same blue, and livelier range colours. Each range has its own wave trim.",
+      "primary": "#1A4A92",
+      "accent": "#5479AA",
+      "light": "#E4EFF9",
+      "band": "#ADC6E2",
       "names": {
         "primary": "Cobalt",
-        "accent": "Clear Blue",
-        "light": "Sky Mist",
-        "band": "Cloud Grey"
+        "accent": "Mid Blue",
+        "light": "Blue Mist",
+        "band": "Blue Trim"
       },
       "ranges": {
         "Implant Care": [
-          "#1B3F94",
-          "#E6EFF9"
+          "#1A4A92",
+          "#E4EFF9",
+          "#ADC6E2"
         ],
         "Perio Care": [
           "#B7366D",
-          "#FBE5EE"
+          "#FBE5EE",
+          "#EABACA"
         ],
         "Daily Care": [
           "#3D8036",
-          "#E5F2DF"
+          "#E5F2DF",
+          "#B4D1AD"
         ],
         "Restore": [
           "#048584",
-          "#D6F4F3"
+          "#D6F4F3",
+          "#9ED3D2"
         ],
         "Potential FPD": [
           "#7E469D",
-          "#F4EBF9"
+          "#F4EBF9",
+          "#D2BCDE"
+        ]
+      },
+      "trim_names": {
+        "Implant Care": "Blue Trim",
+        "Perio Care": "Rose Trim",
+        "Daily Care": "Green Trim",
+        "Restore": "Teal Trim",
+        "Potential FPD": "Violet Trim"
+      },
+      "trim_cmyk": {
+        "Implant Care": [
+          31,
+          16,
+          4,
+          0
+        ],
+        "Perio Care": [
+          7,
+          32,
+          9,
+          0
+        ],
+        "Daily Care": [
+          31,
+          7,
+          39,
+          0
+        ],
+        "Restore": [
+          38,
+          5,
+          20,
+          0
+        ],
+        "Potential FPD": [
+          16,
+          27,
+          0,
+          0
         ]
       }
     }
@@ -87,34 +131,34 @@
     {
       "from": "#10233F",
       "name_from": "Deep Navy",
-      "to": "#1B3F94",
+      "to": "#1A4A92",
       "name_to": "Cobalt",
       "cmyk_to": [
-        100,
-        90,
-        13,
-        2
+        99,
+        82,
+        16,
+        3
       ]
     },
     {
       "from": "#6F7D8A",
       "name_from": "Slate Grey",
-      "to": "#437FC0",
-      "name_to": "Clear Blue",
+      "to": "#5479AA",
+      "name_to": "Mid Blue",
       "cmyk_to": [
-        76,
-        48,
-        6,
-        0
+        74,
+        52,
+        17,
+        1
       ]
     },
     {
       "from": "#DCEAF4",
       "name_from": "Ice Blue",
-      "to": "#E6EFF9",
-      "name_to": "Sky Mist",
+      "to": "#E4EFF9",
+      "name_to": "Blue Mist",
       "cmyk_to": [
-        8,
+        9,
         3,
         1,
         0
@@ -123,12 +167,12 @@
     {
       "from": "#C6CDD5",
       "name_from": "Soft Silver",
-      "to": "#D8E1E9",
-      "name_to": "Cloud Grey",
+      "to": "#ADC6E2",
+      "name_to": "Blue Trim",
       "cmyk_to": [
-        14,
-        7,
-        5,
+        31,
+        16,
+        4,
         0
       ]
     },
