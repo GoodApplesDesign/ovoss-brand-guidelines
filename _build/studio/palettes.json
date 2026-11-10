@@ -47,42 +47,42 @@
     },
     "bright": {
       "name": "Bright",
-      "note": "One blue family: a deep cobalt with lighter tones of the same blue, and livelier range colours. Each range has its own wave trim.",
-      "primary": "#1A4A92",
-      "accent": "#5479AA",
-      "light": "#E4EFF9",
-      "band": "#ADC6E2",
+      "note": "One vivid blue family: Cobalt for the logo and type, Blue Trim for the V and the wave, and brighter range colours, each with its own trim.",
+      "primary": "#1550A8",
+      "accent": "#91C0EA",
+      "light": "#DBEDFD",
+      "band": "#91C0EA",
       "names": {
         "primary": "Cobalt",
-        "accent": "Mid Blue",
+        "accent": "Blue Trim",
         "light": "Blue Mist",
         "band": "Blue Trim"
       },
       "ranges": {
         "Implant Care": [
-          "#1A4A92",
-          "#E4EFF9",
-          "#ADC6E2"
+          "#1550A8",
+          "#DBEDFD",
+          "#91C0EA"
         ],
         "Perio Care": [
-          "#B7366D",
-          "#FBE5EE",
-          "#EABACA"
+          "#BF2A6E",
+          "#FFE4EE",
+          "#F2AEC5"
         ],
         "Daily Care": [
-          "#3D8036",
-          "#E5F2DF",
-          "#B4D1AD"
+          "#32822E",
+          "#E2F3DA",
+          "#A9D1A0"
         ],
         "Restore": [
-          "#048584",
-          "#D6F4F3",
-          "#9ED3D2"
+          "#0C8583",
+          "#CFF5F4",
+          "#83D4D3"
         ],
         "Potential FPD": [
-          "#7E469D",
-          "#F4EBF9",
-          "#D2BCDE"
+          "#8142A5",
+          "#F4E6FC",
+          "#D2B3E3"
         ]
       },
       "trim_names": {
@@ -92,34 +92,35 @@
         "Restore": "Teal Trim",
         "Potential FPD": "Violet Trim"
       },
+      "claims": "#1550A8",
       "trim_cmyk": {
         "Implant Care": [
-          31,
+          41,
           16,
-          4,
+          2,
           0
         ],
         "Perio Care": [
+          4,
+          40,
           7,
-          32,
-          9,
           0
         ],
         "Daily Care": [
-          31,
-          7,
-          39,
+          36,
+          5,
+          47,
           0
         ],
         "Restore": [
-          38,
-          5,
-          20,
+          47,
+          1,
+          23,
           0
         ],
         "Potential FPD": [
-          16,
-          27,
+          17,
+          32,
           0,
           0
         ]
@@ -131,71 +132,71 @@
     {
       "from": "#10233F",
       "name_from": "Deep Navy",
-      "to": "#1A4A92",
+      "to": "#1550A8",
       "name_to": "Cobalt",
       "cmyk_to": [
-        99,
-        82,
-        16,
-        3
+        97,
+        80,
+        4,
+        0
       ]
     },
     {
       "from": "#6F7D8A",
       "name_from": "Slate Grey",
-      "to": "#5479AA",
-      "name_to": "Mid Blue",
+      "to": "#91C0EA",
+      "name_to": "Blue Trim",
       "cmyk_to": [
-        74,
-        52,
-        17,
-        1
+        41,
+        16,
+        2,
+        0
       ]
     },
     {
       "from": "#DCEAF4",
       "name_from": "Ice Blue",
-      "to": "#E4EFF9",
+      "to": "#DBEDFD",
       "name_to": "Blue Mist",
       "cmyk_to": [
-        9,
+        13,
         3,
-        1,
+        0,
         0
       ]
     },
     {
       "from": "#C6CDD5",
       "name_from": "Soft Silver",
-      "to": "#ADC6E2",
+      "to": "#91C0EA",
       "name_to": "Blue Trim",
       "cmyk_to": [
-        31,
+        41,
         16,
-        4,
+        2,
         0
       ]
     },
     {
       "from": "#A4546F",
       "name_from": "Gum Rose",
-      "to": "#B7366D",
+      "to": "#BF2A6E",
       "name_to": "Raspberry",
       "cmyk_to": [
-        29,
-        92,
-        38,
-        5
+        27,
+        96,
+        36,
+        4
       ]
     },
     {
       "from": "#F4E1E8",
       "name_from": "Gum Pink",
-      "to": "#FBE5EE",
+      "to": "#FFE4EE",
       "name_to": "Blush",
       "cmyk_to": [
-        1,
-        13,
+        0,
+        14,
         1,
         0
       ]
@@ -203,11 +204,11 @@
     {
       "from": "#2E5D4F",
       "name_from": "Green",
-      "to": "#3D8036",
+      "to": "#32822E",
       "name_to": "Leaf Green",
       "cmyk_to": [
-        78,
-        29,
+        80,
+        28,
         100,
         15
       ]
@@ -215,63 +216,102 @@
     {
       "from": "#D8E8DE",
       "name_from": "Mint",
-      "to": "#E5F2DF",
+      "to": "#E2F3DA",
       "name_to": "Mint",
       "cmyk_to": [
-        10,
-        1,
-        15,
+        11,
+        0,
+        18,
         0
       ]
     },
     {
       "from": "#1F6B72",
       "name_from": "Mineral Teal",
-      "to": "#048584",
+      "to": "#0C8583",
       "name_to": "Teal",
       "cmyk_to": [
-        85,
+        84,
         31,
-        50,
-        8
+        51,
+        9
       ]
     },
     {
       "from": "#DCEFEF",
       "name_from": "Aqua",
-      "to": "#D6F4F3",
+      "to": "#CFF5F4",
       "name_to": "Aqua",
       "cmyk_to": [
-        15,
+        17,
         0,
-        6,
+        7,
         0
       ]
     },
     {
       "from": "#524677",
       "name_from": "Violet",
-      "to": "#7E469D",
+      "to": "#8142A5",
       "name_to": "Violet",
       "cmyk_to": [
-        63,
-        87,
-        5,
+        62,
+        89,
+        0,
         0
       ]
     },
     {
       "from": "#E4E1EE",
       "name_from": "Lilac",
-      "to": "#F4EBF9",
+      "to": "#F4E6FC",
       "name_to": "Lilac",
       "cmyk_to": [
         3,
-        8,
+        11,
         0,
         0
       ]
     }
   ],
-  "_site_swap": "The guidelines site's Original values and what the Bright switch turns them into. CMYK from U.S. Web Coated (SWOP) v2, perceptual, which reproduces the Original CMYK values. Mist White, white and the red 'don't' marks don't change."
+  "_site_swap": "The guidelines site's Original values and what the Bright switch turns them into. CMYK from U.S. Web Coated (SWOP) v2, perceptual, which reproduces the Original CMYK values. Mist White, white and the red 'don't' marks don't change.",
+  "v_regions": {
+    "mw-front.png": [
+      [
+        220,
+        155,
+        339,
+        286
+      ]
+    ],
+    "tube-label.png": [
+      [
+        537,
+        205,
+        649,
+        328
+      ]
+    ],
+    "carton.png": [
+      [
+        1150,
+        1447,
+        1214,
+        1517
+      ],
+      [
+        2307,
+        1467,
+        2402,
+        1570
+      ],
+      [
+        1600,
+        2190,
+        1913,
+        2473
+      ]
+    ]
+  },
+  "_v_regions": "Where the logo's V sits on each pack texture (x0,y0,x1,y1 px). A palette with 'claims' paints the Slate role in 'claims' everywhere except inside these boxes, where it keeps 'accent' (the V)."
 }

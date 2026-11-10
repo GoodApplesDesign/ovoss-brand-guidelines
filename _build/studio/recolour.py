@@ -59,7 +59,13 @@ def main(keys):
         solid = pal.get('solid')
         for f in FILES:
             arr = np.asarray(Image.open(HERE / 'tex' / f).convert('RGB')).astype(np.float32)
-            out = recolour(arr, dst)
+            if pal.get('claims'):  # the Slate role splits: claims in 'claims', the V (inside v_regions) keeps 'accent'
+                dc = dst.copy(); dc[4] = rgb(pal['claims'])
+                out = recolour(arr, dc)
+                for x0, y0, x1, y1 in CFG.get('v_regions', {}).get(f, []):
+                    out[y0:y1, x0:x1] = recolour(arr[y0:y1, x0:x1], dst)
+            else:
+                out = recolour(arr, dst)
             if solid:  # light solid blocks: block colour, letters on it, and the V on it
                 sd = dst.copy(); sd[0], sd[1], sd[2] = rgb(solid['on']), rgb(solid['bg']), rgb(solid['v'])
                 for x0, y0, x1, y1 in CFG.get('regions', {}).get(f, []):
