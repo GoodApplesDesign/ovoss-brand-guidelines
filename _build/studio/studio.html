@@ -31,8 +31,11 @@ const BG = '#' + (params.get('bg') || 'E4E6E9');
 
 // ---------- textures ----------
 function loadImage(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
+// ?tex=b-soft loads the palette textures made by recolour.py; ?light=E3ECF6 sets the tube's colour below the label
+const TEXDIR = params.get('tex') ? `tex/${params.get('tex')}/` : 'tex/';
+const LIGHT = '#' + (params.get('light') || 'DCEAF4');
 const [tubeImg, cartonImg, mwFrontImg, mwBackImg] = await Promise.all(
-  ['tex/tube-label.png', 'tex/carton.png', 'tex/mw-front.png', 'tex/mw-back.png'].map(loadImage));
+  ['tube-label.png', 'carton.png', 'mw-front.png', 'mw-back.png'].map(f => loadImage(TEXDIR + f)));
 
 const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(window.devicePixelRatio || 1);
@@ -121,7 +124,7 @@ function makeTube() {
   const ly = 10 * PX, lh = 103 * PX, seam = (LAB_R - X0) * PX;
   g.drawImage(tubeImg, (LAB_R - P - LAB_L) * k, 0, (X0 + P - LAB_R) * k, tubeImg.height, seam, ly, W - seam, lh);
   g.drawImage(tubeImg, (X0 - LAB_L) * k, 0, (LAB_R - X0) * k, tubeImg.height, 0, ly, seam, lh);
-  g.fillStyle = '#DCEAF4'; g.fillRect(0, ly + lh - 2, W, H - (ly + lh) + 2); // ice blue runs down to the cap
+  g.fillStyle = LIGHT; g.fillRect(0, ly + lh - 2, W, H - (ly + lh) + 2); // the light colour runs down to the cap
   const sh = g.createLinearGradient(seam, 0, seam + 0.9 * PX, 0); sh.addColorStop(0, 'rgba(0,0,0,0.14)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
   g.fillStyle = sh; g.fillRect(seam, ly, 0.9 * PX, lh);
   const perim = (a, b) => Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
@@ -173,41 +176,90 @@ function makeCarton() {
   return grp;
 }
 
-// ---------- 500 ml mouthwash bottle (assumed shape; labels 59 x 125) ----------
+// ---------- 500 ml mouthwash bottle: clear PET, transparent contents (Greg, 10 Nov) ----------
+// Shape follows the Ardoz sample Greg sent (O7 Active 500 ml): flat oval body with a pinched waist,
+// rounded shoulders, tall white ribbed dosing cap. Sized to carry Ardoz's 59 x 125 mm labels.
 function makeBottle() {
-  const A = 33, B = 23, N = 2.6, NECK = 13.5, BODY_TOP = 152, SHOULDER_TOP = 178, NECK_TOP = 186, BASE_R = 6, LAB_Y = 16, PX = 14;
+  const A = 36, B = 24, N = 2.8, NECK = 13.6, BODY_TOP = 160, SH_TOP = 181, NECK_TOP = 192, BASE_R = 7,
+        FILL = 170, LAB_Y = 18, LW = 59, LH = 125, PX = 16;
+  const waist = y => 1 - 0.1 * Math.exp(-Math.pow((y - 82) / 32, 2));
   const sect = y => {
-    if (y <= BASE_R) { const off = BASE_R - Math.sqrt(Math.max(0, BASE_R * BASE_R - (BASE_R - y) * (BASE_R - y))); return { a: A - off, b: B - off, n: N }; }
-    if (y <= BODY_TOP) return { a: A, b: B, n: N };
-    if (y <= SHOULDER_TOP) { const t = (y - BODY_TOP) / (SHOULDER_TOP - BODY_TOP), e = 0.5 - 0.5 * Math.cos(Math.PI * t);
+    if (y <= BASE_R) { const off = BASE_R - Math.sqrt(Math.max(0, BASE_R * BASE_R - (BASE_R - y) * (BASE_R - y))); const w = waist(y); return { a: A * w - off, b: B - off, n: N }; }
+    if (y <= BODY_TOP) { const w = waist(y); return { a: A * w, b: B * (1 - (1 - w) * 0.4), n: N }; }
+    if (y <= SH_TOP) { const t = Math.min(1, (y - BODY_TOP) / (SH_TOP - BODY_TOP)), e = 1 - Math.pow(1 - Math.pow(t, 2.2), 1 / 2.2);
       return { a: A + (NECK - A) * e, b: B + (NECK - B) * e, n: N + (2 - N) * e }; }
     return { a: NECK, b: NECK, n: 2 };
   };
-  // body perimeter, for the label texture width
-  let Pb = 0; { const e = 2 / N; let px = 0, pz = B; for (let k = 1; k <= 4000; k++) { const ph = 2 * Math.PI * k / 4000; const x = A * Math.sign(Math.sin(ph)) * Math.pow(Math.abs(Math.sin(ph)), e), z = B * Math.sign(Math.cos(ph)) * Math.pow(Math.abs(Math.cos(ph)), e); Pb += Math.hypot(x - px, z - pz); px = x; pz = z; } }
-  const W = Math.round(Pb * PX), H = Math.round(NECK_TOP * PX), lw = 59 * PX, lh = 125 * PX, ly = H - (LAB_Y + 125) * PX;
-  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
-  g.fillStyle = '#f5f5f3'; g.fillRect(0, 0, W, H);
-  const label = (img, cx) => { g.save(); g.shadowColor = 'rgba(0,0,0,0)'; g.drawImage(img, cx - lw / 2, ly, lw, lh); g.restore();
-    g.fillStyle = 'rgba(0,0,0,0.06)'; g.fillRect(cx - lw / 2 - 1, ly, 2, lh); g.fillRect(cx + lw / 2 - 1, ly, 2, lh); };
-  label(mwFrontImg, W / 2); label(mwBackImg, 0); label(mwBackImg, W);
-  const ys = [...range(0, BASE_R, 12), ...range(BASE_R + 1, BODY_TOP, 50), ...range(BODY_TOP + 0.5, SHOULDER_TOP, 40), ...range(SHOULDER_TOP + 0.5, NECK_TOP, 6)];
-  const geo = sweep(ys, sect, 320, (s, tot, y) => [0.5 + s / tot, y / NECK_TOP]);
-  const mat = new THREE.MeshPhysicalMaterial({ map: tex(cv, true), roughness: 0.4, clearcoat: 0.6, clearcoatRoughness: 0.12, bumpMap: plasticGrain, bumpScale: 0.5 });
-  mat.bumpMap.repeat.set(8, 8);
-  const grp = new THREE.Group(); grp.add(finish(new THREE.Mesh(geo, mat)));
-  // base
-  const bs = new THREE.Shape(); { const s0 = sect(0), e = 2 / s0.n; for (let k = 0; k <= 128; k++) { const ph = 2 * Math.PI * k / 128; const x = s0.a * Math.sign(Math.sin(ph)) * Math.pow(Math.abs(Math.sin(ph)), e), z = s0.b * Math.sign(Math.cos(ph)) * Math.pow(Math.abs(Math.cos(ph)), e); if (k) bs.lineTo(x, z); else bs.moveTo(x, z); } }
-  const base = new THREE.Mesh(new THREE.ShapeGeometry(bs), white()); base.rotation.x = Math.PI / 2; base.position.y = 0.01; grp.add(base);
-  // screw cap with fine ribs
-  const capPts = [[0, NECK_TOP - 4], [16.2, NECK_TOP - 4], [16.6, NECK_TOP - 3.4], [16.6, NECK_TOP + 18], [16.1, NECK_TOP + 19.4], [14.5, NECK_TOP + 20], [0, NECK_TOP + 20]].map(([x, y]) => new THREE.Vector2(x, y));
-  const capGeo = new THREE.LatheGeometry(capPts, 180);
+  const grp = new THREE.Group();
+  // body: the filled part is one thick transparent volume, the headspace above the fill line a thin shell
+  const glass = (thickness, ior) => new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.03, metalness: 0, transmission: 1,
+    thickness, ior, specularIntensity: 1, attenuationColor: new THREE.Color(0xe2eaee), attenuationDistance: 380, envMapIntensity: 0.85 });
+  const uvNone = () => [0, 0], uvBody = (s, tot, y) => [s / 2, y / 2];
+  const lower = sweep([...range(0, BASE_R, 12), ...range(BASE_R + 1, FILL, 60)], sect, 240, uvBody);
+  const upper = sweep([...range(FILL, SH_TOP, 30), ...range(SH_TOP + 0.5, NECK_TOP, 6)], sect, 240, uvBody);
+  // clear plastic casts a lighter shadow: a fine stipple in the shadow pass, softened by the VSM blur
+  const stipple = (() => { const c = document.createElement('canvas'); c.width = c.height = 4; const g = c.getContext('2d'); g.fillStyle = '#000'; g.fillRect(0, 0, 4, 4);
+    g.fillStyle = '#fff'; [[0, 0], [2, 0], [1, 1], [3, 1], [0, 2], [2, 2], [1, 3]].forEach(([x, y]) => g.fillRect(x, y, 1, 1)); const t = new THREE.CanvasTexture(c);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping; t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; return t; })();
+  const shadowDepth = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, alphaMap: stipple, alphaTest: 0.5 });
+  [[lower, glass(12, 1.34)], [upper, glass(1.2, 1.57)]].forEach(([g, m]) => { const mesh = new THREE.Mesh(g, m); mesh.castShadow = true; mesh.customDepthMaterial = shadowDepth; grp.add(mesh); });
+  const shapeAt = (y, grow = 0) => { const s = sect(y), e = 2 / s.n, sh = new THREE.Shape();
+    for (let k = 0; k <= 128; k++) { const ph = 2 * Math.PI * k / 128; const x = (s.a + grow) * Math.sign(Math.sin(ph)) * Math.pow(Math.abs(Math.sin(ph)), e), z = (s.b + grow) * Math.sign(Math.cos(ph)) * Math.pow(Math.abs(Math.cos(ph)), e); if (k) sh.lineTo(x, z); else sh.moveTo(x, z); }
+    return sh; };
+  const base = new THREE.Mesh(new THREE.ShapeGeometry(shapeAt(0)), glass(4, 1.57)); base.rotation.x = Math.PI / 2; base.position.y = 0.02; grp.add(base);
+  // the liquid's surface, a faint line just under the shoulder
+  const surf = new THREE.Mesh(new THREE.ShapeGeometry(shapeAt(FILL, -0.6)), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22, depthWrite: false }));
+  surf.rotation.x = -Math.PI / 2; surf.position.y = FILL; grp.add(surf);
+  const ring = new THREE.Mesh(sweep([FILL - 0.5, FILL + 0.4], y => { const s = sect(y); return { a: s.a + 0.05, b: s.b + 0.05, n: s.n }; }, 240, uvNone),
+    new THREE.MeshBasicMaterial({ color: 0x9aa6b2, transparent: true, opacity: 0.35, depthWrite: false }));
+  grp.add(ring);
+  // labels: a patch of the body surface, sized by arc length, printed outside and plain white inside
+  const labelGeo = centre => {
+    const K = 1440, pos = [], uv = [], idx = [], rows = 90, cols = 120;
+    for (let i = 0; i <= rows; i++) {
+      const y = LAB_Y + LH * i / rows, s = sect(y), a = s.a + 0.25, b = s.b + 0.25, e = 2 / s.n;
+      const pt = ph => [a * Math.sign(Math.sin(ph)) * Math.pow(Math.abs(Math.sin(ph)), e), b * Math.sign(Math.cos(ph)) * Math.pow(Math.abs(Math.cos(ph)), e)];
+      const cum = new Float64Array(K + 1); let [px, pz] = pt(-Math.PI);
+      for (let k = 1; k <= K; k++) { const [x, z] = pt(-Math.PI + 2 * Math.PI * k / K); cum[k] = cum[k - 1] + Math.hypot(x - px, z - pz); px = x; pz = z; }
+      const tot = cum[K], c = centre === 'front' ? tot / 2 : 0;
+      for (let j = 0; j <= cols; j++) {
+        let target = c - LW / 2 + LW * j / cols; target = ((target % tot) + tot) % tot;
+        let lo = 0, hi = K; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (cum[m] <= target) lo = m; else hi = m; }
+        const f = (target - cum[lo]) / Math.max(1e-9, cum[lo + 1] - cum[lo]);
+        const [x, z] = pt(-Math.PI + 2 * Math.PI * (lo + f) / K);
+        pos.push(x, y, z); uv.push(j / cols, i / rows);
+      }
+    }
+    for (let i = 0; i < rows; i++) for (let j = 0; j < cols; j++) { const p = i * (cols + 1) + j, q = p + cols + 1; idx.push(p, p + 1, q, p + 1, q + 1, q); }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
+    return g;
+  };
+  const corners = (() => { const c = document.createElement('canvas'); c.width = LW * PX; c.height = LH * PX; const g = c.getContext('2d');
+    g.fillStyle = '#000'; g.fillRect(0, 0, c.width, c.height); g.fillStyle = '#fff'; g.beginPath(); g.roundRect(0, 0, c.width, c.height, 2.5 * PX); g.fill();
+    return new THREE.CanvasTexture(c); })();
+  [['front', mwFrontImg], ['back', mwBackImg]].forEach(([side, img]) => {
+    const geo = labelGeo(side);
+    const printed = new THREE.MeshPhysicalMaterial({ map: tex(img), alphaMap: corners, alphaTest: 0.5, roughness: 0.36, clearcoat: 0.55, clearcoatRoughness: 0.14, bumpMap: plasticGrain, bumpScale: 0.25 });
+    printed.bumpMap.repeat.set(4, 4);
+    const back = new THREE.MeshStandardMaterial({ color: 0xf2f2ef, roughness: 0.7, alphaMap: corners, alphaTest: 0.5, side: THREE.BackSide });
+    const m1 = new THREE.Mesh(geo, printed); m1.receiveShadow = true; grp.add(m1);
+    grp.add(new THREE.Mesh(geo, back));
+  });
+  // tall ribbed dosing cap with a tamper band
+  const C0 = SH_TOP + 3.5;
+  const band = [[NECK + 0.2, C0], [16.4, C0], [16.8, C0 + 0.4], [16.8, C0 + 3.2], [16.4, C0 + 3.6], [NECK + 0.2, C0 + 3.6]].map(([x, y]) => new THREE.Vector2(x, y));
+  grp.add(finish(new THREE.Mesh(new THREE.LatheGeometry(band, 180), white(0.42, 0.25))));
+  const K0 = C0 + 4.4, KH = 48;
+  const capPts = [[0, K0], [16.6, K0], [17.1, K0 + 0.5], [17.1, K0 + 1.5], [16.5, K0 + KH - 2.2], [16.0, K0 + KH - 0.6], [15.0, K0 + KH], [0, K0 + KH]].map(([x, y]) => new THREE.Vector2(x, y));
+  const capGeo = new THREE.LatheGeometry(capPts, 240);
   { const p = capGeo.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i), y = p.getY(i), r = Math.hypot(x, z);
-      if (r > 16 && y > NECK_TOP - 2.5 && y < NECK_TOP + 17.5) { const ang = Math.atan2(z, x), rr = r - 0.22 * (0.5 + 0.5 * Math.cos(ang * 90)); p.setXYZ(i, Math.cos(ang) * rr, y, Math.sin(ang) * rr); } }
+      if (r > 15.5 && y > K0 + 1.2 && y < K0 + KH - 2.4) { const ang = Math.atan2(z, x), rr = r - 0.24 * (0.5 + 0.5 * Math.cos(ang * 120)); p.setXYZ(i, Math.cos(ang) * rr, y, Math.sin(ang) * rr); } }
     capGeo.computeVertexNormals(); }
-  grp.add(finish(new THREE.Mesh(capGeo, white(0.38, 0.3))));
-  grp.add(contact(110, 80));
-  grp.userData.h = NECK_TOP + 20;
+  grp.add(finish(new THREE.Mesh(capGeo, white(0.4, 0.28))));
+  // clear plastic casts a light shadow, so only a soft contact shadow
+  const cs = contact(118, 84); cs.material.opacity = 0.45; grp.add(cs);
+  grp.userData.h = K0 + KH;
   return grp;
 }
 
@@ -218,7 +270,7 @@ function place(o, x, z, rotDeg) { o.position.set(x, 0, z); o.rotation.y = deg(ro
 const S = {
   'toothpaste': () => { place(makeCarton(), -25, -4, 28); place(makeTube(), 27, 6, -16); return { el: 9, az: 0, m: 1.16 }; },
   'mouthwash': () => { place(makeBottle(), 0, 0, 24); return { el: 8, az: 0, m: 1.12 }; },
-  'range': () => { place(makeCarton(), -64, 0, 26); place(makeBottle(), 0, -12, 12); place(makeTube(), 58, 8, -14); return { el: 9, az: 0, m: 1.16 }; },
+  'range': () => { place(makeCarton(), -72, 0, 26); place(makeBottle(), 0, -12, 12); place(makeTube(), 66, 8, -14); return { el: 9, az: 0, m: 1.16 }; },
   'tube-front': () => { place(makeTube(), 0, 0, 0); return { el: 4, az: 0 }; },
   'tube-back': () => { place(makeTube(), 0, 0, 180); return { el: 4, az: 0 }; },
   'carton-front': () => { place(makeCarton(), 0, 0, 30); return { el: 8, az: 0 }; },
