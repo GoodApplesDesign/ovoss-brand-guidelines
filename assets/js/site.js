@@ -84,3 +84,60 @@
     });
   });
 })();
+
+// palette switch: the site is written in Original; Bright swaps colours, values, names, logos and renders in place.
+// The swap table (palette.js) is made by _build/make_bright.py. The choice is remembered, and ?palette=bright links to it.
+(function () {
+  var B = window.OVOSS_BRIGHT, root = document.documentElement, KEY = 'ovoss-palette';
+  var sw = document.querySelector('.pal-switch');
+  if (!B || !sw) { root.classList.remove('pal-pending'); return; }
+  function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  var files = {}; B.files.forEach(function (f) { files[f] = f.replace(/^assets\//, 'assets/bright/'); });
+  var nameMap = {}; B.names.forEach(function (n) { nameMap[n[0]] = n[1]; });
+  var hexRe = /#[0-9a-fA-F]{6}\b/g;
+  var numRe = new RegExp('(^|[^0-9])(' + Object.keys(B.rgb).concat(Object.keys(B.cmyk)).map(esc).join('|') + ')(?![0-9])', 'g');
+  var rgbaRe = new RegExp('(' + Object.keys(B.rgba).map(function (k) { return k.split(',').join('\\s*,\\s*'); }).join('|') + ')', 'g');
+  var nameRe = new RegExp('\\b(' + B.names.map(function (n) { return esc(n[0]); }).join('|') + ')\\b', 'g');
+  var pathRe = new RegExp('(' + B.files.map(esc).join('|') + ')', 'g');
+  var URLS = { src: 1, href: 1, 'data-logo': 1 };
+  function bright(s, a) {
+    if (URLS[a]) return s.replace(pathRe, function (m) { return files[m]; });   // file links: only swap to the Bright file
+    return s.replace(hexRe, function (h) { return B.hex[h.toUpperCase()] || h; })
+      .replace(rgbaRe, function (m) { return B.rgba[m.replace(/\s+/g, '')]; })
+      .replace(numRe, function (m, pre, k) { return pre + (B.rgb[k] || B.cmyk[k]); })
+      .replace(nameRe, function (m) { return nameMap[m]; });
+  }
+  var ATTRS = ['style', 'fill', 'stroke', 'stop-color', 'src', 'href', 'data-bg', 'data-logo', 'data-name', 'data-note', 'alt', 'aria-label', 'title'];
+  var items = [];
+  var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, { acceptNode: function (n) {
+    return n.parentElement.closest('script, style, .pal-switch, [data-bright]') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT; } });
+  for (var n = walker.nextNode(); n; n = walker.nextNode()) if (bright(n.nodeValue) !== n.nodeValue) items.push([n, null, n.nodeValue]);
+  document.querySelectorAll('body *, link[rel="icon"]').forEach(function (el) {
+    if (el.closest('.pal-switch')) return;
+    ATTRS.forEach(function (a) { var v = el.getAttribute(a); if (v && bright(v, a) !== v) items.push([el, a, v]); });
+    if (el.hasAttribute('data-bright')) items.push([el, '#html', el.innerHTML]);
+  });
+  function apply(p) {
+    var on = p === 'bright';
+    items.forEach(function (it) {
+      var el = it[0], a = it[1], o = it[2];
+      var v = !on ? o : a === '#html' ? el.getAttribute('data-bright') : bright(o, a);
+      if (a === null) el.nodeValue = v; else if (a === '#html') el.innerHTML = v; else el.setAttribute(a, v);
+    });
+    // logo colour selector: keep whichever option is picked, in the new palette
+    document.querySelectorAll('[data-selector]').forEach(function (sel) {
+      var c = sel.querySelector('.chip[aria-pressed="true"]'), stage = sel.querySelector('.stage'), res = sel.querySelector('.result');
+      if (!c) return;
+      stage.style.background = c.dataset.bg; stage.querySelector('img').src = c.dataset.logo;
+      if (res) res.innerHTML = '<strong>' + c.dataset.name + '</strong>' + c.dataset.note;
+    });
+    if (on) root.setAttribute('data-palette', 'bright'); else root.removeAttribute('data-palette');
+    sw.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.pal === p ? 'true' : 'false'); });
+    try { localStorage.setItem(KEY, p); } catch (e) {}
+    root.classList.remove('pal-pending');
+  }
+  sw.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { apply(b.dataset.pal); }); });
+  var start = 'original';
+  try { start = localStorage.getItem(KEY) || 'original'; } catch (e) {}
+  apply(start === 'bright' ? 'bright' : 'original');
+})();

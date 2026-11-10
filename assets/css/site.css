@@ -341,3 +341,27 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* ---------- palette switch: Original / Bright, pinned to every page ---------- */
+[data-palette="bright"] {
+  --navy: #1A5BAE; --slate: #1C8CC2; --ice: #DDF1FB; --silver: #D6E2EC;
+  --green: #377B43; --mint: #E2EFE0; --rose: #B53F71; --gum: #FBE5EE; --teal: #217F79; --aqua: #DAF3EF; --violet: #634497; --lilac: #EFE8F9;
+  --faint: rgba(26, 91, 174, .5); --line: rgba(26, 91, 174, .12);
+}
+.pal-pending .shell, .pal-pending .sidebar { visibility: hidden; }
+.pal-switch { position: absolute; right: var(--gut); top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 2px; padding: 3px; border: 1px solid rgba(16, 35, 63, .12); border-radius: 999px; background: #fff; }
+.pal-switch button { display: flex; align-items: center; gap: 7px; padding: 7px 12px 7px 9px; border: 0; border-radius: 999px; background: none; color: #6F7D8A; font: 600 11.5px/1 var(--sans); letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: background .2s, color .2s; }
+.pal-switch button:hover { color: #10233F; }
+.pal-switch button[aria-pressed="true"] { color: #fff; }
+.pal-switch button[data-pal="original"][aria-pressed="true"] { background: #10233F; }
+.pal-switch button[data-pal="bright"][aria-pressed="true"] { background: #1A5BAE; }
+.pal-switch i { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .9); }
+.pal-note { display: none; position: absolute; right: calc(100% + 12px); white-space: nowrap; color: #6F7D8A; font-size: 12px; }
+[data-palette="bright"] .pal-note { display: block; }
+@media (max-width: 1360px) { [data-palette="bright"] .pal-note { display: none; } }
+@media (max-width: 960px) {
+  .topbar-title { display: none; }
+  .topbar { justify-content: flex-start; gap: 8px; }
+  .pal-switch { right: 16px; }
+  .pal-switch button { padding: 7px 10px 7px 8px; font-size: 11px; letter-spacing: .08em; }
+}

@@ -47,7 +47,7 @@
     },
     "bright": {
       "name": "Bright",
-      "note": "A clear clinical blue with an aqua accent. Fresh, lighter on the eye, and mostly white.",
+      "note": "A clear clinical blue with an aqua accent. Fresh, and mostly white.",
       "primary": "#1A5BAE",
       "accent": "#1C8CC2",
       "light": "#DDF1FB",
@@ -68,80 +68,166 @@
           "#FBE5EE"
         ],
         "Daily Care": [
-          "#077750",
-          "#DDEFE3"
+          "#377B43",
+          "#E2EFE0"
         ],
         "Restore": [
-          "#0C7980",
-          "#D9F3F3"
+          "#217F79",
+          "#DAF3EF"
         ],
         "Potential FPD": [
           "#634497",
           "#EFE8F9"
         ]
       }
-    },
-    "light": {
-      "name": "Light",
-      "note": "The same colour families, lighter. The packs go pale blue and pale tints replace the dark blocks. Softer, closer to premium skincare.",
-      "primary": "#025890",
-      "accent": "#3E81B9",
-      "light": "#CADFF5",
-      "band": "#FFFFFF",
-      "solid": {
-        "bg": "#C2D9F7",
-        "on": "#025890",
-        "v": "#3E81B9"
-      },
-      "names": {
-        "primary": "Clear Blue",
-        "accent": "Sky Blue",
-        "light": "Blue Mist",
-        "band": "White",
-        "solid": "Powder Blue",
-        "paper": "Blue Paper"
-      },
-      "ranges": {
-        "Implant Care": [
-          "#025890",
-          "#C2D9F7"
-        ],
-        "Perio Care": [
-          "#A04467",
-          "#F7D4DF"
-        ],
-        "Daily Care": [
-          "#386E4B",
-          "#CDE6CB"
-        ],
-        "Restore": [
-          "#07767D",
-          "#B6E9EC"
-        ],
-        "Potential FPD": [
-          "#5D508E",
-          "#E2D1EF"
-        ]
-      },
-      "paper": "#EDF4FC"
     }
   },
   "_ranges": "ranges: [dark, light] per range. Dark = lid, base flap, badge and the V on white; light = the wave and the V on the dark. Logo letters and type stay the palette's primary. Hues are fixed per range (Joey, 11 Nov): blue core, pink Perio, green Daily, teal/aqua Restore, purple FPD. Options change tone only. In Light the dark blocks become the range's pale tint (second value) with the core type on top, and the first value is the deep tone used for the V and the badge.",
-  "regions": {
-    "carton.png": [
-      [
-        870,
-        390,
-        1564,
-        1250
-      ],
-      [
-        2060,
-        3232,
-        2755,
-        4090
+  "site_swap": [
+    {
+      "from": "#10233F",
+      "name_from": "Deep Navy",
+      "to": "#1A5BAE",
+      "name_to": "Clinical Azure",
+      "cmyk_to": [
+        93,
+        73,
+        4,
+        0
       ]
-    ]
-  },
-  "_regions": "Solid blocks (carton lid and base flap), in texture pixels. A palette with 'solid' recolours these blocks to solid.bg, with the letters in solid.on and the V in solid.v; everywhere else follows the normal roles."
+    },
+    {
+      "from": "#6F7D8A",
+      "name_from": "Slate Grey",
+      "to": "#1C8CC2",
+      "name_to": "Oxygen Aqua",
+      "cmyk_to": [
+        80,
+        38,
+        11,
+        0
+      ]
+    },
+    {
+      "from": "#DCEAF4",
+      "name_from": "Ice Blue",
+      "to": "#DDF1FB",
+      "name_to": "Aqua Mist",
+      "cmyk_to": [
+        12,
+        1,
+        1,
+        0
+      ]
+    },
+    {
+      "from": "#C6CDD5",
+      "name_from": "Soft Silver",
+      "to": "#D6E2EC",
+      "name_to": "Cloud Grey",
+      "cmyk_to": [
+        15,
+        7,
+        4,
+        0
+      ]
+    },
+    {
+      "from": "#A4546F",
+      "name_from": "Gum Rose",
+      "to": "#B53F71",
+      "name_to": "Raspberry",
+      "cmyk_to": [
+        30,
+        89,
+        37,
+        5
+      ]
+    },
+    {
+      "from": "#F4E1E8",
+      "name_from": "Gum Pink",
+      "to": "#FBE5EE",
+      "name_to": "Blush",
+      "cmyk_to": [
+        1,
+        13,
+        1,
+        0
+      ]
+    },
+    {
+      "from": "#2E5D4F",
+      "name_from": "Green",
+      "to": "#377B43",
+      "name_to": "Leaf Green",
+      "cmyk_to": [
+        79,
+        31,
+        92,
+        18
+      ]
+    },
+    {
+      "from": "#D8E8DE",
+      "name_from": "Mint",
+      "to": "#E2EFE0",
+      "name_to": "Mint",
+      "cmyk_to": [
+        11,
+        1,
+        14,
+        0
+      ]
+    },
+    {
+      "from": "#1F6B72",
+      "name_from": "Mineral Teal",
+      "to": "#217F79",
+      "name_to": "Sea Glass",
+      "cmyk_to": [
+        83,
+        33,
+        55,
+        12
+      ]
+    },
+    {
+      "from": "#DCEFEF",
+      "name_from": "Aqua",
+      "to": "#DAF3EF",
+      "name_to": "Aqua",
+      "cmyk_to": [
+        13,
+        0,
+        8,
+        0
+      ]
+    },
+    {
+      "from": "#524677",
+      "name_from": "Violet",
+      "to": "#634497",
+      "name_to": "Violet",
+      "cmyk_to": [
+        76,
+        88,
+        9,
+        1
+      ]
+    },
+    {
+      "from": "#E4E1EE",
+      "name_from": "Lilac",
+      "to": "#EFE8F9",
+      "name_to": "Lilac",
+      "cmyk_to": [
+        4,
+        9,
+        0,
+        0
+      ]
+    }
+  ],
+  "_site_swap": "The guidelines site's Original values and what the Bright switch turns them into. CMYK from U.S. Web Coated (SWOP) v2, perceptual, which reproduces the Original CMYK values. Mist White, white and the red 'don't' marks don't change."
 }
