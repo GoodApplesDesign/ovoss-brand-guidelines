@@ -212,13 +212,13 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 .logo-bg button { padding: 6px 13px; border: 0; border-radius: 40px; background: none; color: var(--ink); font: 500 13px var(--sans); cursor: pointer; transition: background .2s, color .2s; }
 .logo-bg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
 .range-card .rc-pack { display: flex; flex-direction: column; }
-.range-card .rc-lid { position: relative; height: 92px; display: grid; place-items: center; transition: background-color .3s; }
+.range-card .rc-lid { position: relative; height: 124px; display: grid; place-items: center; padding-bottom: 28px; transition: background-color .3s; }
 .range-card .rc-lid img { grid-area: 1 / 1; width: 56%; max-width: 150px; height: auto; transition: opacity .25s; }
 .range-card .rc-lid .on-white { opacity: 0; }
 .range-grid.on-white .rc-lid { background: #fff !important; }
 .range-grid.on-white .rc-lid .on-dark { opacity: 0; }
 .range-grid.on-white .rc-lid .on-white { opacity: 1; }
-.range-card .rc-wave { display: block; width: 100%; height: 30px; }
+.range-card .rc-wave { position: absolute; left: 0; right: 0; bottom: 0; display: block; width: 100%; height: 34px; }
 .rc-vals { list-style: none; margin: 0; padding: 12px 14px 14px; display: grid; gap: 9px; border-top: 1px solid var(--line); }
 .rc-vals li { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; column-gap: 9px; font-size: 12.5px; line-height: 1.3; }
 .rc-vals i { width: 16px; height: 16px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(16, 35, 63, .12); }
