@@ -34,6 +34,7 @@ function loadImage(src) { return new Promise((res, rej) => { const i = new Image
 // ?tex=b-soft loads the palette textures made by recolour.py; ?light=E3ECF6 sets the tube's colour below the label
 const TEXDIR = params.get('tex') ? `tex/${params.get('tex')}/` : 'tex/';
 const LIGHT = '#' + (params.get('light') || 'DCEAF4');
+const TUBE = '#' + (params.get('tube') || 'F4F4F1');
 const [tubeImg, cartonImg, mwFrontImg, mwBackImg] = await Promise.all(
   ['tube-label.png', 'carton.png', 'mw-front.png', 'mw-back.png'].map(f => loadImage(TEXDIR + f)));
 // ?metal=1 also loads each texture's finish masks, made by mist.py: <name>-metal.png (foil) and <name>-hb.png
@@ -230,7 +231,7 @@ function makeTube() {
   const P = 111, R = P / (2 * Math.PI), LEN = 120, X0 = 291.35, FRONT = 319.1, LAB_L = 280.35, LAB_R = 394.35, PX = 17;
   const W = Math.round(P * PX), H = Math.round(LEN * PX), k = tubeImg.width / (LAB_R - LAB_L);
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
-  g.fillStyle = '#f4f4f1'; g.fillRect(0, 0, W, H);
+  g.fillStyle = TUBE; g.fillRect(0, 0, W, H);   // the bare tube (crimp end): ?tube=, default white
   g.fillStyle = 'rgba(0,0,0,0.05)'; for (let y = 0.6; y < 7; y += 1) g.fillRect(0, y * PX, W, 0.35 * PX);
   const ly = 10 * PX, lh = 103 * PX, seam = (LAB_R - X0) * PX;
   g.drawImage(tubeImg, (LAB_R - P - LAB_L) * k, 0, (X0 + P - LAB_R) * k, tubeImg.height, seam, ly, W - seam, lh);
@@ -255,7 +256,8 @@ function makeTube() {
   const body = finish(new THREE.Mesh(geo, mat)); body.position.y = 20; grp.add(body);
   const tubeFoil = foilLayer(geo, mat.map, layout(tubeMetal), mat.userData.smoothBump, mat.bumpScale, true); if (tubeFoil) { tubeFoil.position.y = 20; grp.add(tubeFoil); }
   const b = depth(LEN), seal = new THREE.Shape(); seal.absellipse(0, 0, semiA(b), b, 0, Math.PI * 2);
-  const top = new THREE.Mesh(new THREE.ShapeGeometry(seal, 64), white()); top.rotation.x = -Math.PI / 2; top.position.y = 140; grp.add(top);
+  const sealMat = white(); sealMat.color = new THREE.Color(TUBE).convertSRGBToLinear();
+  const top = new THREE.Mesh(new THREE.ShapeGeometry(seal, 64), sealMat); top.rotation.x = -Math.PI / 2; top.position.y = 140; grp.add(top);
   // stand-up flip cap
   const capPts = [[0, 0], [15.9, 0], [17.6, 0.7], [17.9, 2.2], [17.9, 13], [17.55, 13.5], [17.9, 14], [17.9, 18.8], [17.4, 19.8], [12, 20.3], [0, 20.3]].map(([x, y]) => new THREE.Vector2(x, y));
   grp.add(finish(new THREE.Mesh(new THREE.LatheGeometry(capPts, 128), white(0.4, 0.3))));
