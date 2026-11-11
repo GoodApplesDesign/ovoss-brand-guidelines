@@ -203,12 +203,13 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 .range-card .rc-text p { font-size: 13px; line-height: 1.45; font-weight: 600; margin: 0; }
 .range-card .why { font-size: 13px; line-height: 1.45; color: var(--muted); }
 .range-card .status { margin-top: auto; padding-top: 6px; font-size: 12px; font-weight: 500; }
-/* range cards: the dark as the lid with the logo, the copy, the wave (trim over light), then the three values */
-.range-card .rc-lid { height: 84px; display: grid; place-items: center; }
-.range-card .rc-lid img { width: 56%; max-width: 150px; height: auto; }
-.range-card .rc-wave { display: block; width: 100%; height: 40px; margin-top: -6px; }
-.rc-wave .w-trim { fill: var(--trim); }
-.rc-wave .w-fill { fill: var(--fill); }
+/* range cards: a mini carton (the dark lid and the white face, each with its logo, the wave along the face),
+   then the copy and the three colour values */
+.range-card .rc-pack { display: flex; flex-direction: column; }
+.range-card .rc-lid { height: 76px; display: grid; place-items: center; }
+.range-card .rc-lid img, .range-card .rc-face img { width: 56%; max-width: 150px; height: auto; }
+.range-card .rc-face { position: relative; height: 104px; display: grid; place-items: center; padding-bottom: 26px; background: #fff; }
+.range-card .rc-wave { position: absolute; left: 0; right: 0; bottom: 0; display: block; width: 100%; height: 34px; }
 .rc-vals { list-style: none; margin: 0; padding: 12px 14px 14px; display: grid; gap: 9px; border-top: 1px solid var(--line); }
 .rc-vals li { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; column-gap: 9px; font-size: 12.5px; line-height: 1.3; }
 .rc-vals i { width: 16px; height: 16px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(16, 35, 63, .12); }
@@ -217,12 +218,17 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 .rc-vals .copyable { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .rc-vals .x { grid-column: 2 / -1; display: none; padding-top: 3px; font-size: 11.5px; line-height: 1.45; color: var(--faint); font-variant-numeric: tabular-nums; }
 .range-grid.open .rc-vals .x { display: block; }
+/* phone: one range per row, sideways: the carton on the left, copy and values on the right */
 @media (max-width: 640px) {
-  .rc-vals { padding: 10px 12px 12px; }
-  .rc-vals li { grid-template-columns: 14px minmax(0, 1fr); column-gap: 8px; align-items: start; }
-  .rc-vals i { width: 14px; height: 14px; margin-top: 2px; }
-  .rc-vals .copyable { grid-column: 2; justify-self: start; padding: 0; }
-  .rc-vals .n { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .grid.g5.range-grid { grid-template-columns: 1fr; gap: 14px; }
+  .range-grid .range-card { display: grid; grid-template-columns: 40% minmax(0, 1fr); grid-template-areas: "pack text" "pack vals"; }
+  .range-card .rc-pack { grid-area: pack; border-right: 1px solid var(--line); }
+  .range-card .rc-lid { height: auto; flex: 0 0 42%; }
+  .range-card .rc-face { height: auto; flex: 1; min-height: 110px; }
+  .range-card .rc-lid img, .range-card .rc-face img { width: 72%; }
+  .range-card .rc-text { grid-area: text; padding: 14px 14px 8px; gap: 5px; }
+  .range-card .rc-text .why { display: none; }
+  .range-card .rc-vals { grid-area: vals; border-top: 0; padding: 4px 14px 14px; gap: 7px; }
 }
 .values-toggle { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 18px; padding: 8px 14px; border: 1px solid rgba(16, 35, 63, .2); border-radius: 40px; background: #fff; color: var(--ink); font: 500 13px var(--sans); cursor: pointer; }
 .values-toggle::after { content: "+"; font-size: 15px; line-height: 1; }
