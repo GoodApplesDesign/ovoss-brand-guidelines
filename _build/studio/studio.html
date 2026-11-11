@@ -69,27 +69,53 @@ const FOIL_ROUGH = parseFloat(params.get('foilrough') || '0.14'), FOIL_ENV = par
 const FOIL_ROT = parseFloat(params.get('foilrot') || '1.5'), FOIL_METALNESS = parseFloat(params.get('foilmetal') || '1');
 const HB_AMP = parseFloat(params.get('hb') || '0.75'), HB_BLUR = parseFloat(params.get('hbblur') || '3.5'), GRAIN_MAX = 0.08;
 let foilEnvTex = null;
-const foilEnv = () => foilEnvTex || (foilEnvTex = pmrem.fromScene(new RoomEnvironment(), 0.03).texture);
+const foilEnv = () => PRO ? scene.environment : (foilEnvTex || (foilEnvTex = pmrem.fromScene(new RoomEnvironment(), 0.03).texture));
 function canvasOf(src) { const c = document.createElement('canvas'); c.width = src.width; c.height = src.height; return c; }
 function dataTex(c, repeat) { const t = new THREE.CanvasTexture(c); t.anisotropy = maxAniso; if (repeat) t.wrapS = THREE.RepeatWrapping; return t; }
-function heightTex(hbSrc, grain, repeat) { // 0.12 + grain + raised areas, 8-bit; raised areas (and foil) are smooth
+// Paper board: a 1024 px tile (about 72 mm on the carton texture) of soft mottling, short fibres and fine grain,
+// mid-grey 128 +- a few levels. Used in the carton's height map and, very faintly, in its colour.
+const PAPER = (() => { const N = 1024, c = document.createElement('canvas'); c.width = c.height = N; const g = c.getContext('2d');
+  g.fillStyle = 'rgb(128,128,128)'; g.fillRect(0, 0, N, N);
+  for (let i = 0; i < 260; i++) { const x = Math.random() * N, y = Math.random() * N, r = 20 + Math.random() * 90, v = Math.random() < 0.5 ? 0 : 255;
+    for (const [dx, dy] of [[0, 0], [N, 0], [-N, 0], [0, N], [0, -N]]) { const gr = g.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, r);
+      gr.addColorStop(0, `rgba(${v},${v},${v},0.05)`); gr.addColorStop(1, `rgba(${v},${v},${v},0)`); g.fillStyle = gr; g.fillRect(x + dx - r, y + dy - r, 2 * r, 2 * r); } }
+  g.lineCap = 'round';
+  for (let i = 0; i < 9000; i++) { const x = Math.random() * N, y = Math.random() * N, a = Math.random() * Math.PI, L = 4 + Math.random() * 26, v = Math.random() < 0.55 ? 255 : 0;
+    g.strokeStyle = `rgba(${v},${v},${v},${0.05 + Math.random() * 0.09})`; g.lineWidth = 0.6 + Math.random() * 1.1; g.beginPath();
+    const mx = x + Math.cos(a) * L / 2 + (Math.random() - 0.5) * 4, my = y + Math.sin(a) * L / 2 + (Math.random() - 0.5) * 4;
+    g.moveTo(x, y); g.quadraticCurveTo(mx, my, x + Math.cos(a) * L, y + Math.sin(a) * L); g.stroke(); }
+  const d = g.getImageData(0, 0, N, N), p = d.data;
+  for (let i = 0; i < p.length; i += 4) { const v = p[i] + (Math.random() - 0.5) * 26; p[i] = p[i + 1] = p[i + 2] = v; }
+  g.putImageData(d, 0, 0); return c; })();
+function paperize(img) { // the artwork with a faint paper fibre pattern multiplied in
+  const c = canvasOf(img), g = c.getContext('2d'); g.drawImage(img, 0, 0);
+  g.globalCompositeOperation = 'overlay'; g.globalAlpha = parseFloat(params.get('paperink') || '0.16');
+  g.fillStyle = g.createPattern(PAPER, 'repeat'); g.fillRect(0, 0, c.width, c.height);
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; return c;
+}
+function heightTex(hbSrc, grain, repeat, paper) { // 0.12 + grain (or paper) + raised areas, 8-bit; raised areas (and foil) are smooth
   const c = canvasOf(hbSrc), g = c.getContext('2d');
   g.fillStyle = '#000'; g.fillRect(0, 0, c.width, c.height); g.filter = `blur(${HB_BLUR}px)`; g.drawImage(hbSrc, 0, 0); g.filter = 'none';
   const d = g.getImageData(0, 0, c.width, c.height), p = d.data;
-  for (let i = 0; i < p.length; i += 4) { const v = Math.max(0, Math.min(255, 31 + (Math.random() - 0.5) * grain * 255 * (1 - p[i] / 255) + p[i] * HB_AMP)); p[i] = p[i + 1] = p[i + 2] = v; p[i + 3] = 255; }
+  let pp = null;
+  if (paper && grain) { const pc = canvasOf(hbSrc), pg = pc.getContext('2d'); pg.fillStyle = pg.createPattern(PAPER, 'repeat'); pg.fillRect(0, 0, pc.width, pc.height); pp = pg.getImageData(0, 0, pc.width, pc.height).data; }
+  const PG = parseFloat(params.get('paperbump') || '2.2');
+  for (let i = 0; i < p.length; i += 4) { const h = p[i] / 255, n = pp ? (pp[i] - 128) / 255 * PG : (Math.random() - 0.5);
+    const v = Math.max(0, Math.min(255, 31 + n * grain * 255 * (1 - h) + p[i] * HB_AMP)); p[i] = p[i + 1] = p[i + 2] = v; p[i + 3] = 255; }
   g.putImageData(d, 0, 0); return dataTex(c, repeat);
 }
+const HB_CC = parseFloat(params.get('hbcc') || '0.22'), HB_CCR = parseFloat(params.get('hbccr') || '0.15');
 function glossTex(hbSrc, cc, ccRough, repeat) { // clearcoat in R, its roughness in G (the channels three.js reads)
   const c = canvasOf(hbSrc), g = c.getContext('2d'); g.drawImage(hbSrc, 0, 0);
   const d = g.getImageData(0, 0, c.width, c.height), p = d.data;
-  for (let i = 0; i < p.length; i += 4) { const h = p[i] / 255; p[i] = Math.round((cc + (1 - cc) * h) * 255); p[i + 1] = Math.round((ccRough * (1 - h) + 0.03 * h) * 255); p[i + 2] = 0; p[i + 3] = 255; }
+  for (let i = 0; i < p.length; i += 4) { const h = p[i] / 255; p[i] = Math.round((cc + (Math.max(cc, HB_CC) - cc) * h) * 255); p[i + 1] = Math.round((ccRough * (1 - h) + HB_CCR * h) * 255); p[i + 2] = 0; p[i + 3] = 255; }
   g.putImageData(d, 0, 0); return dataTex(c, repeat);
 }
 // base: the printed material. grain/bump: the material's original grain amplitude (0-1) and bump scale.
-function highBuild(mat, hbSrc, grain, effGrain, repeat) {
+function highBuild(mat, hbSrc, grain, effGrain, repeat, paper) {
   if (!hbSrc) return null;
   const gr = Math.min(GRAIN_MAX, grain);
-  mat.bumpMap = heightTex(hbSrc, gr, repeat); mat.bumpScale = effGrain / gr;
+  mat.bumpMap = heightTex(hbSrc, gr, repeat, paper); mat.bumpScale = effGrain / gr;
   mat.userData.smoothBump = heightTex(hbSrc, 0, repeat); // for the foil layer: same raise, no grain
   mat.clearcoatMap = mat.clearcoatRoughnessMap = glossTex(hbSrc, mat.clearcoat, mat.clearcoatRoughness, repeat);
   mat.clearcoat = 1; mat.clearcoatRoughness = 1;
@@ -102,6 +128,7 @@ function foilLayer(geo, colourTex, maskSrc, bump, bumpScale, repeat) {
     metalness: 1, roughness: FOIL_ROUGH, envMap: foilEnv(), envMapIntensity: FOIL_ENV, clearcoat: 0.5, clearcoatRoughness: 0.05,
     polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
   m.envMapRotation = new THREE.Euler(0, Math.PI * FOIL_ROT, 0); m.metalness = FOIL_METALNESS;
+  if (PRO) { m.envMapRotation = new THREE.Euler(0, Math.PI * parseFloat(params.get('envrot') || '-0.15'), 0); m.anisotropy = parseFloat(params.get('foilaniso') || '0.8'); }
   if (bump) { m.bumpMap = bump; m.bumpScale = bumpScale; }
   const mesh = new THREE.Mesh(geo, m); mesh.receiveShadow = true; return mesh;
 }
@@ -109,15 +136,43 @@ function foilLayer(geo, colourTex, maskSrc, bump, bumpScale, repeat) {
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(BG);
 const pmrem = new THREE.PMREMGenerator(renderer);
-try {
+// ?look=pro (default with metal=1): a product-shoot studio instead of the soft HDRI. A dim room, a gradient reflector
+// behind the camera, strip softboxes left and right, rim strips behind and a top box, so gloss and foil throw
+// real highlights. Panels are HDR (colour x intensity), like three's RoomEnvironment.
+const PRO = params.get('look') ? params.get('look') === 'pro' : !!METAL;
+function studioEnv() {
+  const s = new THREE.Scene(), I = parseFloat(params.get('strip') || '1');
+  const room = new THREE.Mesh(new THREE.BoxGeometry(60, 30, 60), new THREE.MeshBasicMaterial({ color: new THREE.Color(params.get('room') ? '#' + params.get('room') : '#5d636c'), side: THREE.BackSide }));
+  room.position.y = 12; s.add(room);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshBasicMaterial({ color: new THREE.Color(0x9aa0a8) }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = -2.9; s.add(floor);
+  const grad = (stops) => { const c = document.createElement('canvas'); c.width = 4; c.height = 256; const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 256);
+    stops.forEach(([o, v]) => gr.addColorStop(o, `rgb(${v},${v},${v})`)); g.fillStyle = gr; g.fillRect(0, 0, 4, 256); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
+  const panel = (w, h, x, y, z, inten, map) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 1, 1).multiplyScalar(inten * I), map: map || null, side: THREE.DoubleSide }));
+    m.position.set(x, y, z); m.lookAt(0, y * 0.35, 0); s.add(m); };
+  panel(22, 22, 0, 6, 16, 1.2, grad([[0, 255], [0.32, 235], [0.5, 90], [0.62, 30], [1, 12]]));  // gradient reflector behind the camera
+  panel(4, 16, -13, 6, 9, 9);      // key strip, front left
+  panel(8, 16, 13, 5, 8, 9);       // fill strip, front right
+  panel(3, 16, 11, 7, -12, 8);     // rim strip, back right
+  panel(6, 16, -11, 6, -12, 8);    // rim strip, back left
+  const top = new THREE.Mesh(new THREE.PlaneGeometry(14, 10), new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 1, 1).multiplyScalar(3 * I) }));
+  top.position.set(0, 18, 2); top.rotation.x = Math.PI / 2; s.add(top);
+  return pmrem.fromScene(s, 0.0, 0.1, 200).texture;
+}
+if (PRO) {
+  scene.environment = studioEnv();
+  scene.environmentRotation = new THREE.Euler(0, Math.PI * parseFloat(params.get('envrot') || '-0.15'), 0);
+  document.body.dataset.env = 'hdr';
+} else try {
   const hdr = await new RGBELoader().loadAsync('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_09_1k.hdr');
   hdr.mapping = THREE.EquirectangularReflectionMapping;
   scene.environment = pmrem.fromEquirectangular(hdr).texture;
   scene.environmentRotation = new THREE.Euler(0, Math.PI * parseFloat(params.get('envrot') || '1.0'), 0);
   document.body.dataset.env = 'hdr';
 } catch (e) { scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture; document.body.dataset.env = 'room'; }
-scene.environmentIntensity = 0.8;
-const key = new THREE.DirectionalLight(0xffffff, 1.25);
+scene.environmentIntensity = PRO ? parseFloat(params.get('envint') || '1.0') : 0.8;
+const key = new THREE.DirectionalLight(0xffffff, PRO ? parseFloat(params.get('key') || '1.5') : 1.25);
 key.castShadow = true; key.shadow.mapSize.set(4096, 4096); key.shadow.radius = 14; key.shadow.blurSamples = 25; key.shadow.bias = -0.0004;
 const sc = key.shadow.camera; sc.left = -260; sc.right = 260; sc.top = 260; sc.bottom = -260; sc.near = 10; sc.far = 1600;
 scene.add(key); scene.add(key.target);
@@ -232,9 +287,10 @@ function makeCarton(img = cartonImg, metalImg = cartonMetal, hbImg = cartonHB) {
   });
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2)); g.setIndex(idx); g.computeVertexNormals();
-  const mat = new THREE.MeshPhysicalMaterial({ map: tex(img), roughness: 0.62, clearcoat: 0.35, clearcoatRoughness: 0.22, bumpMap: paperGrain, bumpScale: 1.2 });
+  const mat = new THREE.MeshPhysicalMaterial({ map: tex(PRO ? paperize(img) : img), roughness: PRO ? parseFloat(params.get('boardrough') || '0.72') : 0.62, specularIntensity: PRO ? parseFloat(params.get('boardspec') || '0.35') : 1, clearcoat: PRO ? parseFloat(params.get('boardcc') || '0.12') : 0.35,
+    clearcoatRoughness: PRO ? 0.18 : 0.22, bumpMap: paperGrain, bumpScale: 1.2 });
   mat.bumpMap.repeat.set(10, 10);
-  const cartonBump = highBuild(mat, hbImg, 90 / 255, 90 / 255 * 1.2, false);
+  const cartonBump = highBuild(mat, hbImg, 90 / 255, 90 / 255 * 1.2, false, PRO);
   const grp = new THREE.Group(); grp.add(finish(new THREE.Mesh(g, mat))); grp.add(contact(80, 80));
   const cartonFoil = foilLayer(g, mat.map, metalImg, mat.userData.smoothBump, mat.bumpScale, false); if (cartonFoil) grp.add(cartonFoil);
   grp.userData.h = 140;
