@@ -37,12 +37,23 @@
 
   // colour values: one toggle opens or folds every range card's values
   document.querySelectorAll('[data-values-toggle]').forEach(function (b) {
-    var grid = b.parentElement.querySelector('.range-grid');
+    var grid = b.closest('section').querySelector('.range-grid');
     b.addEventListener('click', function () {
       var open = !grid.classList.contains('open');
       grid.classList.toggle('open', open);
       b.setAttribute('aria-expanded', open ? 'true' : 'false');
       b.textContent = open ? 'Hide colour values' : 'Show colour values';
+    });
+  });
+
+  // range cards: show every logo on the range's dark colour or on white
+  document.querySelectorAll('.logo-bg').forEach(function (g) {
+    var grid = g.closest('section').querySelector('.range-grid');
+    g.querySelectorAll('button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        g.querySelectorAll('button').forEach(function (o) { o.setAttribute('aria-pressed', o === btn ? 'true' : 'false'); });
+        grid.classList.toggle('on-white', btn.dataset.logoBg === 'white');
+      });
     });
   });
 
