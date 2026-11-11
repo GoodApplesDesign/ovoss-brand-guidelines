@@ -28,16 +28,43 @@ def mask(path):
     return np.clip((d @ ink) / (ink @ ink), 0, 1)
 
 
-# Foil look: each foil element gets its own multi-stop metallic ramp (dark, mid, light, highlight, back down, a
-# second softer light band), across it at 35 degrees, built from that pixel's own foil colour. Long thin elements
-# (the wave trim) repeat the ramp every ~40 mm so it reads as reflections running along it. Joey, 11 Nov.
-RAMP = [(0.00, -0.72), (0.18, -0.25), (0.34, 0.55), (0.44, 0.97), (0.54, 0.40), (0.70, -0.68), (0.84, 0.30),
-        (0.92, -0.10), (1.00, -0.72)]   # higher contrast, fewer and longer bands (Joey, 11 Nov)
+# Foil look (Joey, 11 Nov): each foil element gets its own metallic ramp built in OKLCH from its foil colour, so the
+# hue holds and only brightness moves: rich darks, saturated lights, and just the thin core of the main highlight
+# goes pale. One main highlight with a deep dark right beside it, a softer second light, smooth (smoothstep) blends.
+# Rows: (position, lightness shift, chroma multiplier). Long trims repeat every 60 mm.
+RAMP = [(0.00, -0.17, 1.05), (0.16, -0.06, 1.10), (0.30, 0.10, 1.15), (0.37, 0.25, 0.80), (0.40, 0.33, 0.45),
+        (0.43, 0.22, 0.85), (0.52, -0.21, 1.00), (0.66, -0.08, 1.10), (0.80, 0.12, 1.10), (0.90, -0.02, 1.08),
+        (1.00, -0.17, 1.05)]
+# small foil (front logo V, ticks, dentist mark: under 12 mm): stays mid to dark with one thin highlight
+RAMP_SMALL = [(0.00, -0.15, 1.05), (0.24, -0.04, 1.10), (0.33, 0.10, 1.10), (0.37, 0.17, 0.85), (0.41, 0.08, 1.10),
+              (0.54, -0.17, 1.00), (0.78, -0.05, 1.10), (1.00, -0.15, 1.05)]
 
 
-def ramp(t):
-    xs, ys = zip(*RAMP)
-    return np.interp(t, xs, ys)
+def ramp(t, table=RAMP):
+    """Smoothstep between stops (no linear kinks), returns (dL, chroma multiplier)."""
+    xs = np.array([r[0] for r in table]); i = np.clip(np.searchsorted(xs, t, side='right') - 1, 0, len(xs) - 2)
+    x0, x1 = xs[i], xs[i + 1]; u = np.clip((t - x0) / np.maximum(x1 - x0, 1e-6), 0, 1); u = u * u * (3 - 2 * u)
+    dl = np.array([r[1] for r in table]); cm = np.array([r[2] for r in table])
+    return dl[i] + (dl[i + 1] - dl[i]) * u, cm[i] + (cm[i + 1] - cm[i]) * u
+
+
+def _lin(c): c = c / 255; return np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
+def _srgb(c): c = np.clip(c, 0, 1); return np.where(c <= 0.0031308, 12.92 * c, 1.055 * c ** (1 / 2.4) - 0.055) * 255
+
+
+def to_oklab(rgb):
+    r, g, b = [_lin(rgb[..., k]) for k in range(3)]
+    l = np.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b); m = np.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+    s_ = np.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+    return np.stack([0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s_, 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s_,
+                     0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s_], -1)
+
+
+def from_oklab(lab):
+    L, a, b = lab[..., 0], lab[..., 1], lab[..., 2]
+    l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3; m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3; s_ = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3
+    return np.stack([_srgb(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s_), _srgb(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s_),
+                     _srgb(-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s_)], -1)
 
 
 def label(mask, step=4):
@@ -77,9 +104,12 @@ def metallic(col_path, mask_path, px_per_mm):
         span = w * ca + h * sa
         period = 60 * px_per_mm if w > 4 * h else span * 1.2   # long trims repeat every ~60 mm; others spread a touch wider
         t = (proj / max(period, 1)) % 1.0
-        s = ramp(t)[..., None]
-        base = col[y0:y1, x0:x1]
-        shaded = np.where(s < 0, base * (1 + s), base + (255 - base) * s)
+        small = max(w, h) / px_per_mm < 12
+        dL, cmul = ramp(t, RAMP_SMALL if small else RAMP)
+        core = (lab[y0:y1, x0:x1] == k) & (m[y0:y1, x0:x1] > 0.95)
+        base_lab = to_oklab(col[y0:y1, x0:x1][core].mean(0)[None, None, :])[0, 0] if core.any() else to_oklab(col[ys[0], xs[0]][None, None, :])[0, 0]
+        L = np.clip(base_lab[0] + dL, 0.12, 0.985)
+        shaded = from_oklab(np.stack([L, base_lab[1] * cmul, base_lab[2] * cmul], -1))
         mm = m[y0:y1, x0:x1][..., None] * (lab[y0:y1, x0:x1] == k)[..., None]
         out[y0:y1, x0:x1] = out[y0:y1, x0:x1] * (1 - mm) + shaded * mm
     Image.fromarray(np.clip(out + 0.5, 0, 255).astype(np.uint8)).save(col_path)

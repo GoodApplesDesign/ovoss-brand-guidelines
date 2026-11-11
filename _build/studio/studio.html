@@ -52,7 +52,8 @@ const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'),
 renderer.setPixelRatio(window.devicePixelRatio || 1);
 renderer.setSize(window.innerWidth, window.innerHeight, false);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.NeutralToneMapping; renderer.toneMappingExposure = 1.0;
+renderer.toneMapping = ({ aces: THREE.ACESFilmicToneMapping, agx: THREE.AgXToneMapping })[params.get('tonemap')] || THREE.NeutralToneMapping;
+renderer.toneMappingExposure = parseFloat(params.get('exposure') || '1.0');
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.VSMShadowMap;
 const maxAniso = renderer.capabilities.getMaxAnisotropy();
 function tex(canvasOrImg, repeat) {
@@ -92,11 +93,12 @@ const PAPER = (() => { const N = 1024, c = document.createElement('canvas'); c.w
   const mean = sum / n, sd = Math.sqrt(Math.max(1, sq / n - mean * mean));
   for (let i = 0; i < p.length; i += 4) { const v = 128 + (p[i] - mean) / sd * 40; p[i] = p[i + 1] = p[i + 2] = v; }
   g.putImageData(d, 0, 0); return c; })();
-function paperize(img) { // the artwork with the paper tile multiplied in: +-strength around 1 (mottling, fibres, grain)
+function paperize(img, foilSrc) { // the artwork with the paper tile multiplied in (+-strength around 1); not on the foil
   const c = canvasOf(img), g = c.getContext('2d'); g.drawImage(img, 0, 0);
+  let fm = null; if (foilSrc) { const fc = canvasOf(img), fg = fc.getContext('2d'); fg.drawImage(foilSrc, 0, 0, c.width, c.height); fm = fg.getImageData(0, 0, c.width, c.height).data; }
   const pc = canvasOf(img), pg = pc.getContext('2d'); pg.fillStyle = pg.createPattern(PAPER, 'repeat'); pg.fillRect(0, 0, pc.width, pc.height);
   const d = g.getImageData(0, 0, c.width, c.height), p = d.data, q = pg.getImageData(0, 0, c.width, c.height).data, k = parseFloat(params.get('paperink') || '0.1');
-  for (let i = 0; i < p.length; i += 4) { const f = 1 + (q[i] - 128) / 128 * k; p[i] *= f; p[i + 1] *= f; p[i + 2] *= f; }
+  for (let i = 0; i < p.length; i += 4) { const f = 1 + (q[i] - 128) / 128 * k * (fm ? 1 - fm[i] / 255 : 1); p[i] *= f; p[i + 1] *= f; p[i + 2] *= f; }
   g.putImageData(d, 0, 0); return c;
 }
 function heightTex(hbSrc, grain, repeat, paper) { // 0.12 + grain (or paper) + raised areas, 8-bit; raised areas (and foil) are smooth
@@ -136,7 +138,7 @@ function foilLayer(geo, colourTex, maskSrc, bump, bumpScale, repeat) {
   m.envMapRotation = new THREE.Euler(0, Math.PI * FOIL_ROT, 0); m.metalness = FOIL_METALNESS;
   if (PRO) { // the foil's metallic look is painted into the texture (multi-stop ramps, mist_tex.py); a little real gloss on top
     m.envMapRotation = new THREE.Euler(0, Math.PI * parseFloat(params.get('envrot') || '-0.15'), 0);
-    m.metalness = parseFloat(params.get('foilmetal') || '0.25'); m.roughness = parseFloat(params.get('foilrough') || '0.25'); m.envMapIntensity = 0.9; m.clearcoat = 0.8; }
+    m.metalness = parseFloat(params.get('foilmetal') || '0.2'); m.roughness = parseFloat(params.get('foilrough') || '0.3'); m.envMapIntensity = 0.7; m.clearcoat = 0.35; m.clearcoatRoughness = 0.15; }
   if (bump) { m.bumpMap = bump; m.bumpScale = bumpScale; }
   const mesh = new THREE.Mesh(geo, m); mesh.receiveShadow = true; return mesh;
 }
@@ -179,8 +181,8 @@ if (PRO) {
   scene.environmentRotation = new THREE.Euler(0, Math.PI * parseFloat(params.get('envrot') || '1.0'), 0);
   document.body.dataset.env = 'hdr';
 } catch (e) { scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture; document.body.dataset.env = 'room'; }
-scene.environmentIntensity = PRO ? parseFloat(params.get('envint') || '1.0') : 0.8;
-const key = new THREE.DirectionalLight(0xffffff, PRO ? parseFloat(params.get('key') || '1.5') : 1.25);
+scene.environmentIntensity = PRO ? parseFloat(params.get('envint') || '0.6') : 0.8;
+const key = new THREE.DirectionalLight(0xffffff, PRO ? parseFloat(params.get('key') || '2.3') : 1.25);
 key.castShadow = true; key.shadow.mapSize.set(4096, 4096); key.shadow.radius = 14; key.shadow.blurSamples = 25; key.shadow.bias = -0.0004;
 const sc = key.shadow.camera; sc.left = -260; sc.right = 260; sc.top = 260; sc.bottom = -260; sc.near = 10; sc.far = 1600;
 scene.add(key); scene.add(key.target);
@@ -296,7 +298,7 @@ function makeCarton(img = cartonImg, metalImg = cartonMetal, hbImg = cartonHB) {
   });
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2)); g.setIndex(idx); g.computeVertexNormals();
-  const mat = new THREE.MeshPhysicalMaterial({ map: tex(PRO ? paperize(img) : img), roughness: PRO ? parseFloat(params.get('boardrough') || '0.72') : 0.62, specularIntensity: PRO ? parseFloat(params.get('boardspec') || '0.35') : 1, clearcoat: PRO ? parseFloat(params.get('boardcc') || '0.12') : 0.35,
+  const mat = new THREE.MeshPhysicalMaterial({ map: tex(PRO ? paperize(img, metalImg) : img), roughness: PRO ? parseFloat(params.get('boardrough') || '0.72') : 0.62, specularIntensity: PRO ? parseFloat(params.get('boardspec') || '0.15') : 1, clearcoat: PRO ? parseFloat(params.get('boardcc') || '0.12') : 0.35,
     clearcoatRoughness: PRO ? 0.18 : 0.22, bumpMap: paperGrain, bumpScale: 1.2 });
   mat.bumpMap.repeat.set(10, 10);
   const cartonBump = highBuild(mat, hbImg, 90 / 255, 90 / 255 * 1.2, false, PRO);
@@ -429,7 +431,13 @@ const target = centre.clone(); target.y = size.y * 0.5 - size.y * 0.02;
 camera.position.set(target.x + dist * Math.sin(Az) * Math.cos(E), target.y + dist * Math.sin(E), target.z + dist * Math.cos(Az) * Math.cos(E));
 camera.lookAt(target);
 // key light from the upper left, a little in front
-key.position.set(target.x - 300, 950, target.z + 560); key.target.position.copy(target).setY(0);
+if (PRO) { // softbox look: light from high up, so shadows are short and soft and pool under the packs
+  key.position.set(target.x - 420, 1450, target.z + 300); key.shadow.radius = 34; key.shadow.blurSamples = 48;
+  { const c = key.shadow.camera; c.left = -900; c.right = 900; c.top = 900; c.bottom = -900; c.near = 10; c.far = 4000; c.updateProjectionMatrix(); key.shadow.mapSize.set(8192, 8192); key.shadow.map = null; }
+  ground.material.opacity = parseFloat(params.get('shadow') || '0.27');
+  objs.forEach(o => o.children.forEach(c => { if (c.material && c.material.map === contactTex) { c.material.opacity = 0.95; c.scale.multiplyScalar(0.92); } }));
+} else key.position.set(target.x - 300, 950, target.z + 560);
+key.target.position.copy(target).setY(0);
 
 renderer.render(scene, camera);
 const gl = renderer.getContext(), dbg = gl.getExtension('WEBGL_debug_renderer_info');
