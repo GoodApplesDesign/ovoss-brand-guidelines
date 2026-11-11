@@ -78,11 +78,11 @@ function dataTex(c, repeat) { const t = new THREE.CanvasTexture(c); t.anisotropy
 // mid-grey 128 +- a few levels. Used in the carton's height map and, very faintly, in its colour.
 const PAPER = (() => { const N = 1024, c = document.createElement('canvas'); c.width = c.height = N; const g = c.getContext('2d');
   g.fillStyle = 'rgb(128,128,128)'; g.fillRect(0, 0, N, N);
-  for (let i = 0; i < 260; i++) { const x = Math.random() * N, y = Math.random() * N, r = 20 + Math.random() * 90, v = Math.random() < 0.5 ? 0 : 255;
+  for (let i = 0; i < (params.get('mottle') ? 260 : 0); i++) { const x = Math.random() * N, y = Math.random() * N, r = 20 + Math.random() * 90, v = Math.random() < 0.5 ? 0 : 255;
     for (const [dx, dy] of [[0, 0], [N, 0], [-N, 0], [0, N], [0, -N]]) { const gr = g.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, r);
       gr.addColorStop(0, `rgba(${v},${v},${v},0.05)`); gr.addColorStop(1, `rgba(${v},${v},${v},0)`); g.fillStyle = gr; g.fillRect(x + dx - r, y + dy - r, 2 * r, 2 * r); } }
   g.lineCap = 'round';
-  for (let i = 0; i < 9000; i++) { const x = Math.random() * N, y = Math.random() * N, a = Math.random() * Math.PI, L = 4 + Math.random() * 26, v = Math.random() < 0.55 ? 255 : 0;
+  for (let i = 0; i < 14000; i++) { const x = Math.random() * N, y = Math.random() * N, a = Math.random() * Math.PI, L = 4 + Math.random() * 26, v = Math.random() < 0.55 ? 255 : 0;
     g.strokeStyle = `rgba(${v},${v},${v},${0.05 + Math.random() * 0.09})`; g.lineWidth = 0.6 + Math.random() * 1.1; g.beginPath();
     const mx = x + Math.cos(a) * L / 2 + (Math.random() - 0.5) * 4, my = y + Math.sin(a) * L / 2 + (Math.random() - 0.5) * 4;
     g.moveTo(x, y); g.quadraticCurveTo(mx, my, x + Math.cos(a) * L, y + Math.sin(a) * L); g.stroke(); }
@@ -97,7 +97,7 @@ function paperize(img, foilSrc) { // the artwork with the paper tile multiplied 
   const c = canvasOf(img), g = c.getContext('2d'); g.drawImage(img, 0, 0);
   let fm = null; if (foilSrc) { const fc = canvasOf(img), fg = fc.getContext('2d'); fg.drawImage(foilSrc, 0, 0, c.width, c.height); fm = fg.getImageData(0, 0, c.width, c.height).data; }
   const pc = canvasOf(img), pg = pc.getContext('2d'); pg.fillStyle = pg.createPattern(PAPER, 'repeat'); pg.fillRect(0, 0, pc.width, pc.height);
-  const d = g.getImageData(0, 0, c.width, c.height), p = d.data, q = pg.getImageData(0, 0, c.width, c.height).data, k = parseFloat(params.get('paperink') || '0.1');
+  const d = g.getImageData(0, 0, c.width, c.height), p = d.data, q = pg.getImageData(0, 0, c.width, c.height).data, k = parseFloat(params.get('paperink') || '0.07');
   for (let i = 0; i < p.length; i += 4) { const f = 1 + (q[i] - 128) / 128 * k * (fm ? 1 - fm[i] / 255 : 1); p[i] *= f; p[i + 1] *= f; p[i + 2] *= f; }
   g.putImageData(d, 0, 0); return c;
 }
