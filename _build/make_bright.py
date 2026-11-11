@@ -109,13 +109,17 @@ def sync_site(pal):
     lay = re.sub(r'(data-pal="bright" aria-pressed="false"><i style="background:)#[0-9A-Fa-f]{6}', r'\g<1>' + core, lay)
     open(lay_p, 'w', encoding='utf-8').write(lay)
     col_p = os.path.join(HERE, 'src', 'pages', 'colour.html'); col = open(col_p, encoding='utf-8').read()
-    order = iter(['Implant Care', 'Perio Care', 'Daily Care', 'Restore', 'Potential FPD'])
-    def chip(m):
-        k = next(order); t = r[k][2]
-        inner = (f'<div class="rc-chip" style="background:{t}"><span class="n">{pal["trim_names"][k]}</span><span class="v"><span>{t}</span>'
-                 f'<span>RGB {" ".join(map(str, rgb(t)))}</span><span>CMYK {" ".join(map(str, pal["trim_cmyk"][k]))}</span></span></div>')
-        return f'<div class="rc-trim" data-bright="{H.escape(inner, quote=True)}"></div>'
-    col = re.sub(r'<div class="rc-trim" data-bright="[^"]*"></div>', chip, col)
+    names = ['Implant Care', 'Perio Care', 'Daily Care', 'Restore', 'Potential FPD']
+    waves = iter(names)
+    col = re.sub(r'(<svg class="rc-wave"[^>]*?)data-bright-style="[^"]*"',
+                 lambda m: (lambda k: m.group(1) + f'data-bright-style="--fill:{r[k][1]};--trim:{r[k][2]}"')(next(waves)), col)
+    rows = iter(names)
+    def trimrow(m):
+        k = next(rows); t = r[k][2]
+        inner = (f'<i style="background:{t}"></i><span class="n">{pal["trim_names"][k]}<small>Trim</small></span>'
+                 f'<button class="copyable">{t}</button><span class="x">RGB {" ".join(map(str, rgb(t)))}<br>CMYK {" ".join(map(str, pal["trim_cmyk"][k]))}</span>')
+        return f'<li class="rc-trimrow" data-bright="{H.escape(inner, quote=True)}">'
+    col = re.sub(r'<li class="rc-trimrow" data-bright="[^"]*">', trimrow, col)
     open(col_p, 'w', encoding='utf-8').write(col)
     print('synced CSS, switch and trim chips:', core, pal['accent'])
 

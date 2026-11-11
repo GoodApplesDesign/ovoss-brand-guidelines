@@ -28,17 +28,16 @@
   }
 
   // click to copy colour values
-  document.querySelectorAll('.copyable').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var v = b.dataset.copy || b.textContent.trim();
-      var done = function () { b.classList.add('copied'); setTimeout(function () { b.classList.remove('copied'); }, 1400); };
-      if (navigator.clipboard) navigator.clipboard.writeText(v).then(done, function () {});
-    });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('.copyable'); if (!b) return;
+    var v = b.dataset.copy || b.textContent.trim();
+    var done = function () { b.classList.add('copied'); setTimeout(function () { b.classList.remove('copied'); }, 1400); };
+    if (navigator.clipboard) navigator.clipboard.writeText(v).then(done, function () {});
   });
 
   // colour values: one toggle opens or folds every range card's values
   document.querySelectorAll('[data-values-toggle]').forEach(function (b) {
-    var grid = b.nextElementSibling;
+    var grid = b.parentElement.querySelector('.range-grid');
     b.addEventListener('click', function () {
       var open = !grid.classList.contains('open');
       grid.classList.toggle('open', open);
@@ -113,15 +112,19 @@
     return n.parentElement.closest('script, style, .pal-switch, [data-bright]') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT; } });
   for (var n = walker.nextNode(); n; n = walker.nextNode()) if (bright(n.nodeValue) !== n.nodeValue) items.push([n, null, n.nodeValue]);
   document.querySelectorAll('body *, link[rel="icon"]').forEach(function (el) {
-    if (el.closest('.pal-switch')) return;
-    ATTRS.forEach(function (a) { var v = el.getAttribute(a); if (v && bright(v, a) !== v) items.push([el, a, v]); });
-    if (el.hasAttribute('data-bright')) items.push([el, '#html', el.innerHTML]);
+    if (el.closest('.pal-switch') || (el.parentElement && el.parentElement.closest('[data-bright]'))) return;
+    ATTRS.forEach(function (a) {
+      var v = el.getAttribute(a);
+      if (a === 'style' && el.getAttribute('data-bright-style')) { items.push([el, a, v || '', el.getAttribute('data-bright-style')]); return; }
+      if (v && bright(v, a) !== v) items.push([el, a, v]);
+    });
+    if (el.getAttribute('data-bright')) items.push([el, '#html', el.innerHTML]);
   });
   function apply(p) {
     var on = p === 'bright';
     items.forEach(function (it) {
       var el = it[0], a = it[1], o = it[2];
-      var v = !on ? o : a === '#html' ? el.getAttribute('data-bright') : bright(o, a);
+      var v = !on ? o : it[3] !== undefined ? it[3] : a === '#html' ? el.getAttribute('data-bright') : bright(o, a);
       if (a === null) el.nodeValue = v; else if (a === '#html') el.innerHTML = v; else el.setAttribute(a, v);
     });
     // logo colour selector: keep whichever option is picked, in the new palette
