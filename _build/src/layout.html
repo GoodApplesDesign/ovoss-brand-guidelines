@@ -8,7 +8,6 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" href="assets/logo/svg/monogram-navy.svg" type="image/svg+xml">
-<script>(function(){try{var q=new URLSearchParams(location.search).get('palette');if(q==='bright'||q==='original')localStorage.setItem('ovoss-palette',q);if(localStorage.getItem('ovoss-palette')==='bright'){var r=document.documentElement;r.setAttribute('data-palette','bright');r.classList.add('pal-pending');}}catch(e){}})();</script>
 <link rel="stylesheet" href="assets/css/site.css?v={{v}}">
 </head>
 <body data-page="{{slug}}">
@@ -32,11 +31,6 @@
     <button class="menu-btn" aria-controls="sidebar" aria-expanded="false"><span></span><span></span><span class="sr">Menu</span></button>
     <a class="topbar-mark" href="index.html" aria-label="Home"><img src="assets/logo/svg/wordmark-navy.svg" alt="" width="78" height="17"></a>
     <span class="topbar-title muted">Brand guidelines</span>
-    <div class="pal-switch" role="group" aria-label="Colour palette">
-      <span class="pal-note">Preview. Downloads are still the Original files.</span>
-      <button type="button" data-pal="original" aria-pressed="true"><i style="background:#10233F"></i>Original</button>
-      <button type="button" data-pal="bright" aria-pressed="false"><i style="background:#13489C"></i>Bright</button>
-    </div>
   </header>
 
   <main id="main">
@@ -54,7 +48,6 @@
     <p>Designed by Good Apples.</p>
   </footer>
 </div>
-<script src="assets/js/palette.js?v={{v}}" defer></script>
 <script src="assets/js/site.js?v={{v}}" defer></script>
 </body>
 </html>

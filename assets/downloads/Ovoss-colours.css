@@ -1,16 +1,25 @@
 /* Ovoss colour tokens */
 :root {
   --ovoss-deep-navy: #10233F;
-  --ovoss-slate-grey: #6F7D8A;
-  --ovoss-ice-blue: #DCEAF4;
-  --ovoss-soft-silver: #C6CDD5;
+  --ovoss-claims-grey: #5F6C79;
+  --ovoss-mist-tint: #E8F2FD;
+  --ovoss-mist-wave: #BBD4EE;
+  --ovoss-foil-blue: #4B8ECB;
   --ovoss-mist-white: #F7F9FB;
   --ovoss-perio-gum-rose: #A4546F;
-  --ovoss-perio-gum-pink: #F4E1E8;
+  --ovoss-perio-blush-tint: #FCECF1;
+  --ovoss-perio-blush-wave: #EAC5D2;
+  --ovoss-perio-foil-rose: #BF6A8D;
   --ovoss-daily-green: #2E5D4F;
-  --ovoss-daily-mint: #D8E8DE;
-  --ovoss-restore-teal: #1F6B72;
-  --ovoss-restore-aqua: #DCEFEF;
+  --ovoss-daily-mint-tint: #E7F5ED;
+  --ovoss-daily-mint-wave: #B9DBC7;
+  --ovoss-daily-foil-green: #3D9E71;
+  --ovoss-restore-mineral-teal: #1F6B72;
+  --ovoss-restore-aqua-tint: #E4F5F5;
+  --ovoss-restore-aqua-wave: #AFDADD;
+  --ovoss-restore-foil-teal: #009DA4;
   --ovoss-potential-fpd-violet: #524677;
-  --ovoss-potential-fpd-lilac: #E4E1EE;
+  --ovoss-potential-fpd-lilac-tint: #F1EFFC;
+  --ovoss-potential-fpd-lilac-wave: #D3CCEC;
+  --ovoss-potential-fpd-foil-violet: #907AC7;
 }

@@ -11,13 +11,25 @@ DL = os.path.join(ROOT, 'assets', 'downloads')
 PNG = os.path.join(HERE, 'png')
 CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 
-# name, hex, (C, M, Y, K) as converted by Illustrator's colour settings
-CORE = [('Deep Navy', '#10233F', (97, 84, 46, 52)), ('Slate Grey', '#6F7D8A', (60, 44, 36, 6)), ('Ice Blue', '#DCEAF4', (12, 3, 1, 0)),
-        ('Soft Silver', '#C6CDD5', (22, 14, 11, 0)), ('Mist White', '#F7F9FB', (2, 1, 0, 0))]
-RANGE = [('Perio Gum Rose', '#A4546F', (34, 77, 39, 7)), ('Perio Gum Pink', '#F4E1E8', (2, 12, 2, 0)),
-         ('Daily Green', '#2E5D4F', (81, 43, 67, 31)), ('Daily Mint', '#D8E8DE', (15, 2, 13, 0)),
-         ('Restore Teal', '#1F6B72', (86, 43, 48, 17)), ('Restore Aqua', '#DCEFEF', (13, 0, 5, 0)),
-         ('Potential FPD Violet', '#524677', (78, 81, 27, 11)), ('Potential FPD Lilac', '#E4E1EE', (9, 9, 1, 0))]
+# name, hex, (C, M, Y, K): U.S. Web Coated (SWOP) v2. Foil colours are the screen stand-in and the CMYK the foil is matched to.
+CORE = [('Deep Navy', '#10233F', (97, 84, 46, 52)), ('Claims Grey', '#5F6C79', (66, 51, 41, 14)), ('Mist Tint', '#E8F2FD', (7, 2, 0, 0)),
+        ('Mist Wave', '#BBD4EE', (25, 10, 2, 0)), ('Foil Blue', '#4B8ECB', (71, 39, 5, 0)), ('Mist White', '#F7F9FB', (2, 1, 0, 0))]
+RANGE = [('Perio Gum Rose', '#A4546F', (34, 77, 39, 7)),
+         ('Perio Blush Tint', '#FCECF1', (1, 9, 2, 0)),
+         ('Perio Blush Wave', '#EAC5D2', (7, 26, 7, 0)),
+         ('Perio Foil Rose', '#BF6A8D', (28, 71, 27, 1)),
+         ('Daily Green', '#2E5D4F', (81, 43, 67, 31)),
+         ('Daily Mint Tint', '#E7F5ED', (9, 0, 8, 0)),
+         ('Daily Mint Wave', '#B9DBC7', (28, 4, 26, 0)),
+         ('Daily Foil Green', '#3D9E71', (75, 19, 71, 3)),
+         ('Restore Mineral Teal', '#1F6B72', (86, 43, 48, 17)),
+         ('Restore Aqua Tint', '#E4F5F5', (9, 0, 4, 0)),
+         ('Restore Aqua Wave', '#AFDADD', (31, 4, 14, 0)),
+         ('Restore Foil Teal', '#009DA4', (80, 22, 39, 1)),
+         ('Potential FPD Violet', '#524677', (78, 81, 27, 11)),
+         ('Potential FPD Lilac Tint', '#F1EFFC', (4, 5, 0, 0)),
+         ('Potential FPD Lilac Wave', '#D3CCEC', (15, 19, 0, 0)),
+         ('Potential FPD Foil Violet', '#907AC7', (49, 58, 0, 0))]
 PNG_WIDTH = {'wordmark': 2400, 'implant-care': 2400, 'brand-line': 2400, 'monogram': 2000}
 
 

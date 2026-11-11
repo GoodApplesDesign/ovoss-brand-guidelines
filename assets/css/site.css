@@ -5,9 +5,12 @@
 
 :root {
   --navy: #10233F;
-  --slate: #6F7D8A;
-  --ice: #DCEAF4;
-  --silver: #C6CDD5;
+  --slate: #5F6C79;   /* Claims Grey */
+  --ice: #E8F2FD;     /* Mist Tint */
+  --silver: #BBD4EE;  /* Mist Wave */
+  --tint: #E8F2FD;
+  --wave: #BBD4EE;
+  --foil: #4B8ECB;    /* Foil Blue: the foil, on screen */
   --mist: #F7F9FB;
   --green: #2E5D4F;
   --mint: #D8E8DE;
@@ -187,6 +190,7 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 .vals li { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; border-bottom: 1px solid var(--line); }
 .vals li:last-child { border-bottom: 0; }
 .vals .k { color: var(--faint); }
+.vals .note { text-align: right; color: var(--muted); }
 .copyable { background: none; border: 0; padding: 0; color: var(--ink); font: inherit; cursor: copy; text-align: right; }
 .copyable:hover { text-decoration: underline; }
 .copyable.copied::after { content: " copied"; color: var(--slate); }
@@ -215,7 +219,7 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 .range-card .rc-lid { position: relative; height: 124px; display: grid; place-items: center; padding-bottom: 28px; transition: background-color .3s; }
 .range-card .rc-lid img { grid-area: 1 / 1; width: 56%; max-width: 150px; height: auto; transition: opacity .25s; }
 .range-card .rc-lid .on-white { opacity: 0; }
-.range-grid.on-white .rc-lid { background: #fff !important; }
+.range-grid.on-white .rc-lid { background: var(--rc-tint, #fff) !important; }
 .range-grid.on-white .rc-lid .on-dark { opacity: 0; }
 .range-grid.on-white .rc-lid .on-white { opacity: 1; }
 .range-card .rc-wave { position: absolute; left: 0; right: 0; bottom: 0; display: block; width: 100%; height: 34px; }
@@ -368,32 +372,9 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 
-/* ---------- palette switch: Original / Bright, pinned to every page ---------- */
-/* bright:start (made by _build/make_bright.py) */
-[data-palette="bright"] {
-  --navy: #13489C; --slate: #7CC0F1; --ice: #DBEDFD; --silver: #7CC0F1;
-  --green: #32822E; --mint: #E2F3DA; --rose: #BF2A6E; --gum: #FFE4EE; --teal: #0C8583; --aqua: #CFF5F4; --violet: #8142A5; --lilac: #F4E6FC;
-  --muted: rgba(19, 72, 156, .72); --faint: rgba(19, 72, 156, .5); --line: rgba(19, 72, 156, .12);
-}
-/* bright:end */
-/* Bright has one blue for type and the V's Blue Trim, so the Slate Grey swatch folds into Blue Trim */
-[data-palette="bright"] #core .swatch:nth-child(2) { display: none; }
-[data-palette="bright"] #core .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-@media (max-width: 640px) { [data-palette="bright"] #core .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.pal-pending .shell, .pal-pending .sidebar { visibility: hidden; }
-.pal-switch { position: absolute; right: var(--gut); top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 2px; padding: 3px; border: 1px solid rgba(16, 35, 63, .12); border-radius: 999px; background: #fff; }
-.pal-switch button { display: flex; align-items: center; gap: 7px; padding: 7px 12px 7px 9px; border: 0; border-radius: 999px; background: none; color: #6F7D8A; font: 600 11.5px/1 var(--sans); letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: background .2s, color .2s; }
-.pal-switch button:hover { color: #10233F; }
-.pal-switch button[aria-pressed="true"] { color: #fff; }
-.pal-switch button[data-pal="original"][aria-pressed="true"] { background: #10233F; }
-.pal-switch button[data-pal="bright"][aria-pressed="true"] { background: #13489C; }
-.pal-switch i { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .9); }
-.pal-note { display: none; position: absolute; right: calc(100% + 12px); white-space: nowrap; color: #6F7D8A; font-size: 12px; }
-[data-palette="bright"] .pal-note { display: block; }
-@media (max-width: 1360px) { [data-palette="bright"] .pal-note { display: none; } }
-@media (max-width: 960px) {
-  .topbar-title { display: none; }
-  .topbar { justify-content: flex-start; gap: 8px; }
-  .pal-switch { right: 16px; }
-  .pal-switch button { padding: 7px 10px 7px 8px; font-size: 11px; letter-spacing: .08em; }
-}
+/* ---------- finishes (Packaging page) ---------- */
+.finish-map { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap); }
+.finish-map figure { margin: 0; }
+.finish-map img { display: block; width: 100%; height: auto; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--line); }
+.finish-key { display: inline-flex; align-items: center; gap: 8px; }
+.finish-key i { width: 12px; height: 12px; border-radius: 50%; }

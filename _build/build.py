@@ -65,7 +65,7 @@ def main():
     layout = open(os.path.join(HERE, 'src', 'layout.html'), encoding='utf-8').read()
     # cache-bust the CSS and JS so a push shows straight away
     import hashlib
-    v = hashlib.md5(b''.join(open(os.path.join(ROOT, p), 'rb').read() for p in ('assets/css/site.css', 'assets/js/site.js', 'assets/js/palette.js'))).hexdigest()[:8]
+    v = hashlib.md5(b''.join(open(os.path.join(ROOT, p), 'rb').read() for p in ('assets/css/site.css', 'assets/js/site.js'))).hexdigest()[:8]
     layout = layout.replace('{{v}}', v)
     loaded = {slug: load(slug) for slug, _ in PAGES}
     sections = {slug: v[2] for slug, v in loaded.items()}

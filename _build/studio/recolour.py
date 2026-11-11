@@ -52,6 +52,8 @@ def recolour(arr, dst):
 def main(keys):
     for key in keys:
         pal = CFG['palettes'][key]
+        if pal.get('builder'):  # built by its own script (e.g. mist.py)
+            print(key, 'skipped: run', pal['builder']); continue
         dst = np.stack([rgb(pal.get('paper', '#FFFFFF')), rgb(pal['primary']), rgb(pal['light']), rgb(pal['band']),
                         rgb(pal['accent']), rgb('#000000')])
         outdir = HERE / 'tex' / key

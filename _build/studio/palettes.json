@@ -125,6 +125,49 @@
           0
         ]
       }
+    },
+    "mist": {
+      "name": "Mist",
+      "builder": "mist.py",
+      "note": "Mist (Joey, 11 Nov 2026): the Original navy palette on a light tint of each range's hue instead of white. The wave fill is a clear step darker than the tint, and the foil (the V, the wave trim, the whole dentist badge and the benefit ticks) is a metallic foil in each range's own hue (option B, Joey 11 Nov). High build (raised gloss UV) on the logo, the wave trim and the dentist badge.",
+      "ink": "#0E223E",
+      "claims": "#5F6C79",
+      "silver": "#CED1D5",
+      "badge_scale": 0.8,
+      "badge_ring_mm": 0.3,
+      "ranges": {
+        "Implant Care": {
+          "dark": "#10233F",
+          "paper": "#E8F2FD",
+          "wave": "#BBD4EE",
+          "metal": "#4B8ECB"
+        },
+        "Perio Care": {
+          "dark": "#A4546F",
+          "paper": "#FCECF1",
+          "wave": "#EAC5D2",
+          "metal": "#BF6A8D"
+        },
+        "Daily Care": {
+          "dark": "#2E5D4F",
+          "paper": "#E7F5ED",
+          "wave": "#B9DBC7",
+          "metal": "#3D9E71"
+        },
+        "Restore": {
+          "dark": "#1F6B72",
+          "paper": "#E4F5F5",
+          "wave": "#AFDADD",
+          "metal": "#009DA4"
+        },
+        "Potential FPD": {
+          "dark": "#524677",
+          "paper": "#F1EFFC",
+          "wave": "#D3CCEC",
+          "metal": "#907AC7"
+        }
+      },
+      "foil": "hue"
     }
   },
   "_ranges": "ranges: [dark, light] per range. Dark = lid, base flap, badge and the V on white; light = the wave and the V on the dark. Logo letters and type stay the palette's primary. Hues are fixed per range (Joey, 11 Nov): blue core, pink Perio, green Daily, teal/aqua Restore, purple FPD. Options change tone only. In Light the dark blocks become the range's pale tint (second value) with the core type on top, and the first value is the deep tone used for the V and the badge.",
@@ -313,5 +356,6 @@
       ]
     ]
   },
-  "_v_regions": "Where the logo's V sits on each pack texture (x0,y0,x1,y1 px). A palette with 'claims' paints the Slate role in 'claims' everywhere except inside these boxes, where it keeps 'accent' (the V)."
+  "_v_regions": "Where the logo's V sits on each pack texture (x0,y0,x1,y1 px). A palette with 'claims' paints the Slate role in 'claims' everywhere except inside these boxes, where it keeps 'accent' (the V).",
+  "_mist": "Mist is built by mist.py (not recolour.py). Per range: paper = the light tint behind everything, wave = the wave fill, dark = lid and base flap, metal = that range's foil (the V, wave trim, dentist badge, benefit ticks). Steps (WCAG contrast): tint/wave ~1.35, wave/foil ~2.3, tint/foil ~3. Claims (#5F6C79) are Slate Grey a step deeper so small text holds 4.7:1 on the tints. 'silver' is kept only as the option A value (not chosen). Textures: tex/mist/ (Implant Care) and tex/mist-<range>/, each with -metal.png (foil) and -hb.png (high build) masks."
 }
