@@ -64,6 +64,21 @@
     return p.name + " ends " + y0.toFixed(2) + " / " + y1.toFixed(2) + " -> " + h.toFixed(2);
   }
 
+  // mouthwash back label: ease its two ends to the front label's wave heights, which sit next to them on the bottle
+  function easeEnds(p, e, key) {
+    var pts = p.pathPoints, n = pts.length, ybot = 1e9, k, top = [];
+    for (k = 0; k < n; k++) ybot = Math.min(ybot, pts[k].anchor[1]);
+    for (k = 0; k < n; k++) if (pts[k].anchor[1] > ybot + 0.01 * MM) top.push(pts[k].anchor);
+    function yAt(xmm) { var x = xmm * MM, lo = null, hi = null;
+      for (var j = 0; j < top.length; j++) { var a = top[j]; if (a[0] <= x && (!lo || a[0] > lo[0])) lo = a; if (a[0] >= x && (!hi || a[0] < hi[0])) hi = a; }
+      if (!lo) return hi[1] / MM; if (!hi || hi[0] == lo[0]) return lo[1] / MM; return (lo[1] + (hi[1] - lo[1]) * (x - lo[0]) / (hi[0] - lo[0])) / MM; }
+    var dl = e.left[key] - yAt(e.x0), dr = e.right[key] - yAt(e.x1);
+    for (k = 0; k < n; k++) { var a = pts[k].anchor; if (a[1] <= ybot + 0.01 * MM) continue; var x = a[0] / MM, c = 0, t;
+      if (x <= e.x0 + e.ease) { t = Math.max(0, Math.min(1, (x - e.x0) / e.ease)); c += dl * (0.5 + 0.5 * Math.cos(Math.PI * t)); }
+      if (x >= e.x1 - e.ease) { t = Math.max(0, Math.min(1, (e.x1 - x) / e.ease)); c += dr * (0.5 + 0.5 * Math.cos(Math.PI * t)); }
+      if (c) { var ny = a[1] + c * MM; pts[k].anchor = [a[0], ny]; pts[k].leftDirection = [a[0], ny]; pts[k].rightDirection = [a[0], ny]; } }
+    return p.name + " ends -> " + e.left[key] + " / " + e.right[key];
+  }
   function topEdge(p) { // the wave's top edge anchors, left to right (the wave paths are 1 mm polylines with a flat base)
     var pts = p.pathPoints, ybot = 1e9, out = [], k;
     for (k = 0; k < pts.length; k++) ybot = Math.min(ybot, pts[k].anchor[1]);
@@ -118,6 +133,7 @@
       for (var wi = 0; wi < P.waves.length; wi++) {
         var ice = byName(d, P.waves[wi][0]), sil = byName(d, P.waves[wi][1]);
         if (P.seam) { log.push(fixSeam(ice, P.seam)); log.push(fixSeam(sil, P.seam)); }
+        if (P.ends && P.ends[wi]) { log.push(easeEnds(ice, P.ends[wi], "ice")); log.push(easeEnds(sil, P.ends[wi], "sil")); }
         ice.fillColor = WAVE;
         // the visible trim: between the fill's top edge and the trim's top edge, wherever the trim sits above the fill.
         // Cut out wherever a barcode's white box sits, so no foil (or high build) lands on the barcode.

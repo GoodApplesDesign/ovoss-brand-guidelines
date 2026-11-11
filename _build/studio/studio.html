@@ -87,12 +87,17 @@ const PAPER = (() => { const N = 1024, c = document.createElement('canvas'); c.w
     g.moveTo(x, y); g.quadraticCurveTo(mx, my, x + Math.cos(a) * L, y + Math.sin(a) * L); g.stroke(); }
   const d = g.getImageData(0, 0, N, N), p = d.data;
   for (let i = 0; i < p.length; i += 4) { const v = p[i] + (Math.random() - 0.5) * 26; p[i] = p[i + 1] = p[i + 2] = v; }
+  // stretch to a set contrast (std 40 levels around 128) so the strength params mean the same thing
+  let sum = 0, sq = 0, n = p.length / 4; for (let i = 0; i < p.length; i += 4) { sum += p[i]; sq += p[i] * p[i]; }
+  const mean = sum / n, sd = Math.sqrt(Math.max(1, sq / n - mean * mean));
+  for (let i = 0; i < p.length; i += 4) { const v = 128 + (p[i] - mean) / sd * 40; p[i] = p[i + 1] = p[i + 2] = v; }
   g.putImageData(d, 0, 0); return c; })();
-function paperize(img) { // the artwork with a faint paper fibre pattern multiplied in
+function paperize(img) { // the artwork with the paper tile multiplied in: +-strength around 1 (mottling, fibres, grain)
   const c = canvasOf(img), g = c.getContext('2d'); g.drawImage(img, 0, 0);
-  g.globalCompositeOperation = 'overlay'; g.globalAlpha = parseFloat(params.get('paperink') || '0.16');
-  g.fillStyle = g.createPattern(PAPER, 'repeat'); g.fillRect(0, 0, c.width, c.height);
-  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; return c;
+  const pc = canvasOf(img), pg = pc.getContext('2d'); pg.fillStyle = pg.createPattern(PAPER, 'repeat'); pg.fillRect(0, 0, pc.width, pc.height);
+  const d = g.getImageData(0, 0, c.width, c.height), p = d.data, q = pg.getImageData(0, 0, c.width, c.height).data, k = parseFloat(params.get('paperink') || '0.1');
+  for (let i = 0; i < p.length; i += 4) { const f = 1 + (q[i] - 128) / 128 * k; p[i] *= f; p[i + 1] *= f; p[i + 2] *= f; }
+  g.putImageData(d, 0, 0); return c;
 }
 function heightTex(hbSrc, grain, repeat, paper) { // 0.12 + grain (or paper) + raised areas, 8-bit; raised areas (and foil) are smooth
   const c = canvasOf(hbSrc), g = c.getContext('2d');
@@ -100,7 +105,7 @@ function heightTex(hbSrc, grain, repeat, paper) { // 0.12 + grain (or paper) + r
   const d = g.getImageData(0, 0, c.width, c.height), p = d.data;
   let pp = null;
   if (paper && grain) { const pc = canvasOf(hbSrc), pg = pc.getContext('2d'); pg.fillStyle = pg.createPattern(PAPER, 'repeat'); pg.fillRect(0, 0, pc.width, pc.height); pp = pg.getImageData(0, 0, pc.width, pc.height).data; }
-  const PG = parseFloat(params.get('paperbump') || '2.2');
+  const PG = parseFloat(params.get('paperbump') || '2.5');
   for (let i = 0; i < p.length; i += 4) { const h = p[i] / 255, n = pp ? (pp[i] - 128) / 255 * PG : (Math.random() - 0.5);
     const v = Math.max(0, Math.min(255, 31 + n * grain * 255 * (1 - h) + p[i] * HB_AMP)); p[i] = p[i + 1] = p[i + 2] = v; p[i + 3] = 255; }
   g.putImageData(d, 0, 0); return dataTex(c, repeat);
@@ -129,7 +134,9 @@ function foilLayer(geo, colourTex, maskSrc, bump, bumpScale, repeat) {
     metalness: 1, roughness: FOIL_ROUGH, envMap: foilEnv(), envMapIntensity: FOIL_ENV, clearcoat: 0.5, clearcoatRoughness: 0.05,
     polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
   m.envMapRotation = new THREE.Euler(0, Math.PI * FOIL_ROT, 0); m.metalness = FOIL_METALNESS;
-  if (PRO) { m.envMapRotation = new THREE.Euler(0, Math.PI * parseFloat(params.get('envrot') || '-0.15'), 0); m.anisotropy = parseFloat(params.get('foilaniso') || '0.8'); }
+  if (PRO) { // the foil's metallic look is painted into the texture (multi-stop ramps, mist_tex.py); a little real gloss on top
+    m.envMapRotation = new THREE.Euler(0, Math.PI * parseFloat(params.get('envrot') || '-0.15'), 0);
+    m.metalness = parseFloat(params.get('foilmetal') || '0.25'); m.roughness = parseFloat(params.get('foilrough') || '0.25'); m.envMapIntensity = 0.9; m.clearcoat = 0.8; }
   if (bump) { m.bumpMap = bump; m.bumpScale = bumpScale; }
   const mesh = new THREE.Mesh(geo, m); mesh.receiveShadow = true; return mesh;
 }
@@ -363,10 +370,10 @@ function makeBottle() {
     return new THREE.CanvasTexture(c); })();
   [['front', mwFrontImg, mwFrontMetal, mwFrontHB], ['back', mwBackImg, mwBackMetal, mwBackHB]].forEach(([side, img, metalImg, hbImg]) => {
     const geo = labelGeo(side);
-    const printed = new THREE.MeshPhysicalMaterial({ map: tex(img), alphaMap: corners, alphaTest: 0.5, roughness: 0.36, clearcoat: 0.55, clearcoatRoughness: 0.14, bumpMap: plasticGrain, bumpScale: 0.25 });
+    const printed = new THREE.MeshPhysicalMaterial({ map: tex(img), alphaMap: corners, alphaTest: 0.5, transparent: true, depthWrite: true, roughness: 0.36, clearcoat: 0.55, clearcoatRoughness: 0.14, bumpMap: plasticGrain, bumpScale: 0.25 });
     printed.bumpMap.repeat.set(4, 4);
     const labelBump = highBuild(printed, hbImg, 40 / 255, 40 / 255 * 0.25, false);
-    const back = new THREE.MeshStandardMaterial({ color: 0xf2f2ef, roughness: 0.7, alphaMap: corners, alphaTest: 0.5, side: THREE.BackSide });
+    const back = new THREE.MeshStandardMaterial({ color: new THREE.Color('#' + (params.get('lback') || 'F2F2EF')).convertSRGBToLinear(), roughness: 0.7, alphaMap: corners, alphaTest: 0.5, transparent: true, depthWrite: true, side: THREE.BackSide });
     const m1 = new THREE.Mesh(geo, printed); m1.receiveShadow = true; grp.add(m1);
     const labelFoil = foilLayer(geo, printed.map, metalImg, printed.userData.smoothBump, printed.bumpScale, false); if (labelFoil) grp.add(labelFoil);
     grp.add(new THREE.Mesh(geo, back));
