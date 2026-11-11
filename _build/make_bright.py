@@ -77,7 +77,7 @@ def main():
         'rgb': {' '.join(map(str, rgb(s['from']))): ' '.join(map(str, rgb(s['to']))) for s in SWAP},
         'rgba': {','.join(map(str, rgb(s['from']))): ','.join(map(str, rgb(s['to']))) for s in SWAP},
         'cmyk': {' '.join(map(str, CMYK_FROM[s['from'].upper()])): ' '.join(map(str, s['cmyk_to'])) for s in SWAP},
-        'names': [[s['name_from'], s['name_to']] for s in SWAP if s['name_from'] != s['name_to']] + [['Navy', 'Azure'], ['navy', 'azure']],
+        'names': [[s['name_from'], s['name_to']] for s in SWAP if s['name_from'] != s['name_to']] + [['Navy', 'Cobalt'], ['navy', 'cobalt']],
         'files': sorted(files),
         'vars': {'--navy': pal['primary'], '--slate': pal['accent'], '--ice': pal['light'], '--silver': pal['band']},
     }
@@ -85,6 +85,39 @@ def main():
           'window.OVOSS_BRIGHT = ' + json.dumps(table, indent=1) + ';\n')
     open(os.path.join(ROOT, 'assets', 'js', 'palette.js'), 'w', encoding='utf-8').write(js)
     print(len(files), 'files with a Bright version;', len(table['names']), 'name swaps')
+    sync_site(pal)
+
+
+def sync_site(pal):
+    """Write the Bright values into the CSS overrides, the switch, and the range trim chips on the Colour page."""
+    import html as H
+    r = pal['ranges']
+    core = r['Implant Care'][0]; c = ', '.join(map(str, rgb(core)))
+    block = ('/* bright:start (made by _build/make_bright.py) */\n[data-palette="bright"] {\n'
+             f"  --navy: {core}; --slate: {pal['accent']}; --ice: {pal['light']}; --silver: {pal['band']};\n"
+             f"  --green: {r['Daily Care'][0]}; --mint: {r['Daily Care'][1]}; --rose: {r['Perio Care'][0]}; --gum: {r['Perio Care'][1]}; "
+             f"--teal: {r['Restore'][0]}; --aqua: {r['Restore'][1]}; --violet: {r['Potential FPD'][0]}; --lilac: {r['Potential FPD'][1]};\n"
+             f"  --muted: rgba({c}, .72); --faint: rgba({c}, .5); --line: rgba({c}, .12);\n}}\n/* bright:end */")
+    css_p = os.path.join(ROOT, 'assets', 'css', 'site.css'); css = open(css_p, encoding='utf-8').read()
+    if '/* bright:start' in css:
+        css = re.sub(r'/\* bright:start.*?/\* bright:end \*/', lambda m: block, css, flags=re.S)
+    else:
+        css = re.sub(r'\[data-palette="bright"\] \{[^}]*\}', lambda m: block, css, count=1)
+    css = re.sub(r'(\.pal-switch button\[data-pal="bright"\]\[aria-pressed="true"\] \{ background: )#[0-9A-Fa-f]{6}', r'\g<1>' + core, css)
+    open(css_p, 'w', encoding='utf-8').write(css)
+    lay_p = os.path.join(HERE, 'src', 'layout.html'); lay = open(lay_p, encoding='utf-8').read()
+    lay = re.sub(r'(data-pal="bright" aria-pressed="false"><i style="background:)#[0-9A-Fa-f]{6}', r'\g<1>' + core, lay)
+    open(lay_p, 'w', encoding='utf-8').write(lay)
+    col_p = os.path.join(HERE, 'src', 'pages', 'colour.html'); col = open(col_p, encoding='utf-8').read()
+    order = iter(['Implant Care', 'Perio Care', 'Daily Care', 'Restore', 'Potential FPD'])
+    def chip(m):
+        k = next(order); t = r[k][2]
+        inner = (f'<div class="rc-chip" style="background:{t}"><span class="n">{pal["trim_names"][k]}</span><span class="v"><span>{t}</span>'
+                 f'<span>RGB {" ".join(map(str, rgb(t)))}</span><span>CMYK {" ".join(map(str, pal["trim_cmyk"][k]))}</span></span></div>')
+        return f'<div class="rc-trim" data-bright="{H.escape(inner, quote=True)}"></div>'
+    col = re.sub(r'<div class="rc-trim" data-bright="[^"]*"></div>', chip, col)
+    open(col_p, 'w', encoding='utf-8').write(col)
+    print('synced CSS, switch and trim chips:', core, pal['accent'])
 
 
 if __name__ == '__main__':

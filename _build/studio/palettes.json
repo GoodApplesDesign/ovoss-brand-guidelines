@@ -48,10 +48,10 @@
     "bright": {
       "name": "Bright",
       "note": "One vivid blue family: Cobalt for the logo and type, Blue Trim for the V and the wave, and brighter range colours, each with its own trim.",
-      "primary": "#1550A8",
-      "accent": "#91C0EA",
+      "primary": "#13489C",
+      "accent": "#7CC0F1",
       "light": "#DBEDFD",
-      "band": "#91C0EA",
+      "band": "#7CC0F1",
       "names": {
         "primary": "Cobalt",
         "accent": "Blue Trim",
@@ -60,9 +60,9 @@
       },
       "ranges": {
         "Implant Care": [
-          "#1550A8",
+          "#13489C",
           "#DBEDFD",
-          "#91C0EA"
+          "#7CC0F1"
         ],
         "Perio Care": [
           "#BF2A6E",
@@ -92,12 +92,12 @@
         "Restore": "Teal Trim",
         "Potential FPD": "Violet Trim"
       },
-      "claims": "#1550A8",
+      "claims": "#13489C",
       "trim_cmyk": {
         "Implant Care": [
-          41,
-          16,
-          2,
+          47,
+          15,
+          0,
           0
         ],
         "Perio Care": [
@@ -132,24 +132,24 @@
     {
       "from": "#10233F",
       "name_from": "Deep Navy",
-      "to": "#1550A8",
+      "to": "#13489C",
       "name_to": "Cobalt",
       "cmyk_to": [
-        97,
-        80,
-        4,
-        0
+        100,
+        85,
+        10,
+        1
       ]
     },
     {
       "from": "#6F7D8A",
       "name_from": "Slate Grey",
-      "to": "#91C0EA",
+      "to": "#7CC0F1",
       "name_to": "Blue Trim",
       "cmyk_to": [
-        41,
-        16,
-        2,
+        47,
+        15,
+        0,
         0
       ]
     },
@@ -168,12 +168,12 @@
     {
       "from": "#C6CDD5",
       "name_from": "Soft Silver",
-      "to": "#91C0EA",
+      "to": "#7CC0F1",
       "name_to": "Blue Trim",
       "cmyk_to": [
-        41,
-        16,
-        2,
+        47,
+        15,
+        0,
         0
       ]
     },

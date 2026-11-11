@@ -343,11 +343,13 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 }
 
 /* ---------- palette switch: Original / Bright, pinned to every page ---------- */
+/* bright:start (made by _build/make_bright.py) */
 [data-palette="bright"] {
-  --navy: #1550A8; --slate: #91C0EA; --ice: #DBEDFD; --silver: #91C0EA;
+  --navy: #13489C; --slate: #7CC0F1; --ice: #DBEDFD; --silver: #7CC0F1;
   --green: #32822E; --mint: #E2F3DA; --rose: #BF2A6E; --gum: #FFE4EE; --teal: #0C8583; --aqua: #CFF5F4; --violet: #8142A5; --lilac: #F4E6FC;
-  --muted: rgba(21, 80, 168, .72); --faint: rgba(21, 80, 168, .5); --line: rgba(21, 80, 168, .12);
+  --muted: rgba(19, 72, 156, .72); --faint: rgba(19, 72, 156, .5); --line: rgba(19, 72, 156, .12);
 }
+/* bright:end */
 /* Bright has one blue for type and the V's Blue Trim, so the Slate Grey swatch folds into Blue Trim */
 [data-palette="bright"] #core .swatch:nth-child(2) { display: none; }
 [data-palette="bright"] #core .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -358,7 +360,7 @@ h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size:
 .pal-switch button:hover { color: #10233F; }
 .pal-switch button[aria-pressed="true"] { color: #fff; }
 .pal-switch button[data-pal="original"][aria-pressed="true"] { background: #10233F; }
-.pal-switch button[data-pal="bright"][aria-pressed="true"] { background: #1550A8; }
+.pal-switch button[data-pal="bright"][aria-pressed="true"] { background: #13489C; }
 .pal-switch i { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .9); }
 .pal-note { display: none; position: absolute; right: calc(100% + 12px); white-space: nowrap; color: #6F7D8A; font-size: 12px; }
 [data-palette="bright"] .pal-note { display: block; }
