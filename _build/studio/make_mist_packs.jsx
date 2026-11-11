@@ -79,6 +79,30 @@
       if (c) { var ny = a[1] + c * MM; pts[k].anchor = [a[0], ny]; pts[k].leftDirection = [a[0], ny]; pts[k].rightDirection = [a[0], ny]; } }
     return p.name + " ends -> " + e.left[key] + " / " + e.right[key];
   }
+  // TM -> (R) (Greg, 11 Nov: the trade mark is through). Each "TM" item is replaced by an Avenir Next Demi Bold (R),
+  // 1.45x the TM's letter height, turned with its wordmark, set at the TM's corner nearest the S and the top line.
+  function swapTM(d) {
+    var tms = all(d, function (it) { return it.name == "TM"; }), n = 0, font = app.textFonts.getByName("AvenirNext-DemiBold");
+    for (var i = 0; i < tms.length; i++) { var tm = tms[i], b = tm.geometricBounds, par = tm.parent, s2 = null;
+      for (var k = 0; k < par.pageItems.length; k++) if (par.pageItems[k].name == "S2") s2 = par.pageItems[k];
+      var tc = centre(b), ang = 0;
+      if (!s2) { var best = 1e12, s2s = all(d, function (it) { return it.name == "S2"; });   // TM grouped apart from its letters
+        for (var q2 = 0; q2 < s2s.length; q2++) { var c2 = centre(s2s[q2].geometricBounds), dd = Math.pow(c2[0] - tc[0], 2) + Math.pow(c2[1] - tc[1], 2); if (dd < best) { best = dd; s2 = s2s[q2]; } } }
+      if (s2) { var sc2 = centre(s2.geometricBounds); ang = Math.round((Math.atan2(tc[1] - sc2[1], tc[0] - sc2[0]) * 180 / Math.PI - 45) / 90) * 90; }
+      ang = ((ang % 360) + 360) % 360;
+      var w = b[2] - b[0], h = b[1] - b[3], H = (ang == 90 || ang == 270) ? w : h;
+      var col = null; try { col = tm.typename == "CompoundPathItem" ? tm.pathItems[0].fillColor : tm.fillColor; } catch (e) {}
+      var t = tm.layer.textFrames.add(); t.contents = "\u00AE"; t.textRange.characterAttributes.textFont = font; t.textRange.characterAttributes.size = 20;
+      var o = t.createOutline(), ob = o.geometricBounds, kk = (H * 1.45) / (ob[1] - ob[3]) * 100; o.resize(kk, kk);
+      if (ang) o.rotate(ang);
+      ob = o.geometricBounds;
+      // the upright top-left corner, turned with the wordmark
+      var cx = { 0: [0, 1], 90: [0, 3], 180: [2, 3], 270: [2, 1] }[ang];
+      o.translate(b[cx[0]] - ob[cx[0]], b[cx[1]] - ob[cx[1]]);
+      if (col) paint(o, col, false);
+      o.move(tm, ElementPlacement.PLACEBEFORE); o.name = "R"; tm.remove(); n++; }
+    return "TM->R " + n;
+  }
   function topEdge(p) { // the wave's top edge anchors, left to right (the wave paths are 1 mm polylines with a flat base)
     var pts = p.pathPoints, ybot = 1e9, out = [], k;
     for (k = 0; k < pts.length; k++) ybot = Math.min(ybot, pts[k].anchor[1]);
@@ -189,7 +213,7 @@
       log.push("ticks " + nTicks);
 
       STEP = P.key + " logos";
-      // logos: every letter to high build (not the TM); every V to foil
+      // logos: every letter to high build (not the TM / R); every V to foil
       var letters = all(d, function (it) { return it.name == "O1" || it.name == "V" || it.name == "O2" || it.name == "S1" || it.name == "S2"; });
       for (var li = 0; li < letters.length; li++) { var Lt = letters[li];
         var hd = Lt.duplicate(hbL, ElementPlacement.PLACEATEND); hd.name = "High build - logo " + Lt.name; paint(hd, HB, true); hd.blendingMode = BlendModes.MULTIPLY;
@@ -222,6 +246,7 @@
         log.push("badge " + (D / MM).toFixed(1) + "mm -> " + (nd / MM).toFixed(1) + "mm");
       }
 
+      STEP = P.key + " reg"; log.push(swapTM(d));
       STEP = P.key + " notes";
       // notes
       var nt = notesL.textFrames.add(); nt.position = [P.notesAt[0] * MM, P.notesAt[1] * MM];

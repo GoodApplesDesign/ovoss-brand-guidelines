@@ -87,9 +87,38 @@ def label(mask, step=4):
     return full, n
 
 
-def metallic(col_path, mask_path, px_per_mm):
+# carton lid (top tuck) and base flap (bottom tuck), mm, document coords: the dark solid that can go metallic too
+TUCKS = [(61.87, 232.43, 109.87, 291.93), (145.87, 31.93, 193.87, 91.43)]
+CARTON_TOP = 320.03
+
+
+def tuck_foil(col, m, px_per_mm):
+    """Joey, 11 Nov: the dark solid on the carton lid and base flap as metallic foil (renders: a dark foil ramp).
+    Adds those pixels to the foil mask and shades them; returns the mask of what it did."""
+    lid = np.zeros(m.shape, np.float32)
+    for x0m, y0m, x1m, y1m in TUCKS:
+        x0, x1 = int(round(x0m * px_per_mm)), int(round(x1m * px_per_mm))
+        y0, y1 = int(round((CARTON_TOP - y1m) * px_per_mm)), int(round((CARTON_TOP - y0m) * px_per_mm))
+        blk = col[y0:y1, x0:x1]
+        dark = np.median(blk.reshape(-1, 3), axis=0)                       # the tuck's own colour
+        d = np.linalg.norm(blk - dark, axis=2)
+        a = np.clip(1 - d / 60, 0, 1) * (1 - m[y0:y1, x0:x1])            # its pixels, not the letters or the V
+        h, w = a.shape
+        yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+        ang = np.radians(35); t = ((xx * np.cos(ang) + yy * np.sin(ang)) / (1.2 * (w * np.cos(ang) + h * np.sin(ang)))) % 1.0
+        dL, cmul = ramp(t, RAMP)
+        base = to_oklab(dark[None, None, :])[0, 0]
+        L = np.clip(base[0] + dL * 0.85, 0.12, 0.9)
+        shaded = from_oklab(np.stack([L, base[1] * cmul, base[2] * cmul], -1))
+        col[y0:y1, x0:x1] = col[y0:y1, x0:x1] * (1 - a[..., None]) + shaded * a[..., None]
+        lid[y0:y1, x0:x1] = a
+    return lid
+
+
+def metallic(col_path, mask_path, px_per_mm, tucks=False):
     col = np.asarray(Image.open(col_path).convert('RGB')).astype(np.float32)
     m = np.asarray(Image.open(mask_path).convert('L')).astype(np.float32) / 255
+    lid = tuck_foil(col, m, px_per_mm) if tucks else None
     lab, n = label(m)
     out = col.copy()
     a = np.radians(35); ca, sa = np.cos(a), np.sin(a)
@@ -112,10 +141,16 @@ def metallic(col_path, mask_path, px_per_mm):
         shaded = from_oklab(np.stack([L, base_lab[1] * cmul, base_lab[2] * cmul], -1))
         mm = m[y0:y1, x0:x1][..., None] * (lab[y0:y1, x0:x1] == k)[..., None]
         out[y0:y1, x0:x1] = out[y0:y1, x0:x1] * (1 - mm) + shaded * mm
+    if lid is not None:  # keep the shaded tucks and add them to the foil mask
+        out = np.where(lid[..., None] > 0, col, out) if False else out
+        sel = lid > 0
+        out[sel] = col[sel] * lid[sel][:, None] + out[sel] * (1 - lid[sel][:, None])
+        Image.fromarray(np.clip(np.maximum(m, lid) * 255 + 0.5, 0, 255).astype(np.uint8)).save(mask_path)
     Image.fromarray(np.clip(out + 0.5, 0, 255).astype(np.uint8)).save(col_path)
     return n
 
 
+TUCK_FOIL = False  # metallic lid and base flap (renders preview, Joey 11 Nov)
 PXMM = {'carton': 3920 / 276.44, 'tube-label': 1938 / 114, 'mw-front': 1169 / 59, 'mw-back': 1169 / 59}
 
 
@@ -128,13 +163,15 @@ def main():
         for kind, suffix in (('foil', 'metal'), ('hb', 'hb')):
             m = mask(RAW / f'{f.stem}-{kind}.png')
             Image.fromarray((m * 255 + 0.5).astype(np.uint8)).save(OUT / f'{f.stem}-{suffix}.png')
-        print('mist', f.name, 'foil elements', metallic(OUT / f.name, OUT / f'{f.stem}-metal.png', PXMM[f.stem]))
+        print('mist', f.name, 'foil elements', metallic(OUT / f.name, OUT / f'{f.stem}-metal.png', PXMM[f.stem], tucks=TUCK_FOIL and f.stem == 'carton'))
     for d in sorted(p for p in RAW.iterdir() if p.is_dir()):
         o = HERE / 'tex' / f'mist-{d.name}'; o.mkdir(parents=True, exist_ok=True)
         shutil.copy(d / 'carton.png', o / 'carton.png')
         for s in ('metal', 'hb'):
             shutil.copy(OUT / f'carton-{s}.png', o / f'carton-{s}.png')
-        print('mist-' + d.name, 'foil elements', metallic(o / 'carton.png', o / 'carton-metal.png', PXMM['carton']))
+        if TUCK_FOIL:  # the copied mask already includes the tucks; rebuild it from the raw foil so each range shades its own dark
+            Image.fromarray((mask(RAW / 'carton-foil.png') * 255 + 0.5).astype(np.uint8)).save(o / 'carton-metal.png')
+        print('mist-' + d.name, 'foil elements', metallic(o / 'carton.png', o / 'carton-metal.png', PXMM['carton'], tucks=TUCK_FOIL))
 
 
 if __name__ == '__main__':
